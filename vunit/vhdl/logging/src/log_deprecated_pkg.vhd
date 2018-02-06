@@ -13,7 +13,7 @@ use work.core_pkg.core_failure;
 use std.textio.all;
 
 package log_deprecated_pkg is
-  alias verbose_csv is work.log_handler_pkg.csv [return deprecated_log_format_t];
+  constant verbose_csv : log_format_t := csv;
 
   -- Deprecated interface to better support legacy testbenches. Calls to this
   -- procedure will be mapped to contemporary functionality using best effort:
