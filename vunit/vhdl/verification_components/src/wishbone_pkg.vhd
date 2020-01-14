@@ -154,7 +154,10 @@ package wishbone_pkg is
 
   -- Wait until all operations scheduled before this command has finished
   procedure wait_until_idle(signal net      : inout network_t;
-                            wishbone_master : wishbone_master_t);
+    wishbone_master : wishbone_master_t);
+
+  function get_std_cfg(wishbone_master : wishbone_master_t) return std_cfg_t;
+  function get_std_cfg(wishbone_slave : wishbone_slave_t) return std_cfg_t;
 
 end package;
 
@@ -353,5 +356,17 @@ package body wishbone_pkg is
   begin
     wait_until_idle(net, wishbone_master.p_bus_handle);
   end;
+
+  function get_std_cfg(wishbone_master : wishbone_master_t) return std_cfg_t is
+  begin
+    return get_std_cfg(wishbone_master.p_bus_handle);
+  end;
+
+  function get_std_cfg(wishbone_slave : wishbone_slave_t) return std_cfg_t is
+  begin
+    return wishbone_slave.p_std_cfg;
+  end;
+
+
 
 end package body;

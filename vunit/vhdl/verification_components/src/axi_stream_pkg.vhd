@@ -191,6 +191,9 @@ package axi_stream_pkg is
   impure function as_sync(monitor : axi_stream_monitor_t) return sync_handle_t;
   impure function as_sync(protocol_checker : axi_stream_protocol_checker_t) return sync_handle_t;
   function get_std_cfg(master : axi_stream_master_t) return std_cfg_t;
+  function get_std_cfg(slave : axi_stream_slave_t) return std_cfg_t;
+  function get_std_cfg(monitor : axi_stream_monitor_t) return std_cfg_t;
+  function get_std_cfg(protocol_checker : axi_stream_protocol_checker_t) return std_cfg_t;
 
   constant push_axi_stream_msg        : msg_type_t := new_msg_type("push axi stream");
   constant pop_axi_stream_msg         : msg_type_t := new_msg_type("pop axi stream");
@@ -554,12 +557,12 @@ package body axi_stream_pkg is
 
   impure function as_stream(master : axi_stream_master_t) return stream_master_t is
   begin
-    return (p_actor => get_actor(master.p_std_cfg));
+    return (p_std_cfg => master.p_std_cfg);
   end;
 
   impure function as_stream(slave : axi_stream_slave_t) return stream_slave_t is
   begin
-    return (p_actor => get_actor(slave.p_std_cfg));
+    return (p_std_cfg => slave.p_std_cfg);
   end;
 
   impure function as_sync(master : axi_stream_master_t) return sync_handle_t is
@@ -585,6 +588,21 @@ package body axi_stream_pkg is
   function get_std_cfg(master : axi_stream_master_t) return std_cfg_t is
   begin
     return master.p_std_cfg;
+  end;
+
+  function get_std_cfg(slave : axi_stream_slave_t) return std_cfg_t is
+  begin
+    return slave.p_std_cfg;
+  end;
+
+  function get_std_cfg(monitor : axi_stream_monitor_t) return std_cfg_t is
+  begin
+    return monitor.p_std_cfg;
+  end;
+
+  function get_std_cfg(protocol_checker : axi_stream_protocol_checker_t) return std_cfg_t is
+  begin
+    return protocol_checker.p_std_cfg;
   end;
 
   procedure push_axi_stream(

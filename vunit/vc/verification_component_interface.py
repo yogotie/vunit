@@ -248,20 +248,19 @@ class VerificationComponentInterface:
         """
         vci_code, vc_constructor = cls.validate(vci_path, vc_handle_t)
 
-        initial_library_names = set(["std", "work", "vunit_lib", vci_lib_name])
-        initial_context_refs = set(["vunit_lib.vunit_context", "vunit_lib.com_context"])
-        initial_package_refs = set(
-            [
-                "vunit_lib.vc_pkg.all",
-                "%s.%s.all" % (vci_lib_name, vci_code.packages[0].identifier),
-            ]
-        )
         context_items = create_context_items(
             vci_code,
             vci_lib_name,
-            initial_library_names,
-            initial_context_refs,
-            initial_package_refs,
+            initial_library_names=set(["std", "work", "vunit_lib", vci_lib_name]),
+            initial_context_refs=set(
+                ["vunit_lib.vunit_context", "vunit_lib.com_context"]
+            ),
+            initial_package_refs=set(
+                [
+                    "vunit_lib.vc_pkg.all",
+                    "%s.%s.all" % (vci_lib_name, vci_code.packages[0].identifier),
+                ]
+            ),
         )
 
         unspecified_parameters = [
@@ -272,10 +271,18 @@ class VerificationComponentInterface:
         if unspecified_parameters:
             constant_declarations = ""
             for parameter in unspecified_parameters:
-                constant_declarations += "    constant %s : %s := ;\n" % (
-                    ", ".join(parameter.identifier_list),
-                    parameter.subtype_indication.type_mark,
-                )
+                for identifier in parameter.identifier_list:
+                    if identifier in [
+                        "actor",
+                        "logger",
+                        "checker",
+                        "fail_on_unexpected_msg_type",
+                    ]:
+                        continue
+                    constant_declarations += "    constant %s : %s := ;\n" % (
+                        identifier,
+                        parameter.subtype_indication.type_mark,
+                    )
         else:
             constant_declarations = "\n"
 
@@ -283,17 +290,16 @@ class VerificationComponentInterface:
             """-- Read the TODOs to complete this template.
 
 ${context_items}
-entity tb_${vci_name}_compliance is
+entity tb_${vc_handle_t}_compliance is
   generic(
     runner_cfg : string);
 end entity;
 
-architecture tb of tb_${vci_name}_compliance is
+architecture tb of tb_${vc_handle_t}_compliance is
 begin
   test_runner : process
     -- TODO: Specify a value for all listed constants.
-    ${constant_declarations}
-
+${constant_declarations}
     -- DO NOT modify this line and the lines below.
   begin
     test_runner_setup(runner, runner_cfg);
@@ -305,7 +311,7 @@ end architecture;
 
         template_code = tb_template.substitute(
             context_items=context_items,
-            vci_name=vci_code.packages[0].identifier,
+            vc_handle_t=vc_handle_t,
             constant_declarations=constant_declarations,
         )
 
@@ -360,6 +366,13 @@ end architecture;
             )
             for parameter in unspecified_parameters:
                 for identifier in parameter.identifier_list:
+                    if identifier in [
+                        "actor",
+                        "logger",
+                        "checker",
+                        "fail_on_unexpected_msg_type",
+                    ]:
+                        continue
                     handle_assignment += "          %s => %s,\n" % (
                         identifier,
                         identifier,
@@ -536,7 +549,10 @@ end architecture;
         """
 
         try:
-            vci_test_lib.test_bench("tb_%s_compliance" % self.vci_facade.name)
+            vci_test_lib.test_bench(
+                "tb_%s_%s_compliance"
+                % (self.vci_facade.name, self.vc_constructor.return_type_mark)
+            )
             raise RuntimeError(
                 "tb_%s_compliance already exists in %s"
                 % (self.vci_facade.name, vci_test_lib.name)
@@ -547,7 +563,11 @@ end architecture;
         if not exists(test_dir):
             makedirs(test_dir)
 
-        tb_path = join(test_dir, "tb_%s_compliance.vhd" % self.vci_facade.name)
+        tb_path = join(
+            test_dir,
+            "tb_%s_%s_compliance.vhd"
+            % (self.vci_facade.name, self.vc_constructor.return_type_mark),
+        )
         with open(tb_path, "w") as fptr:
             testbench_code = self.create_vhdl_testbench(template_path)
             if not testbench_code:

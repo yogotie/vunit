@@ -65,6 +65,8 @@ package uart_pkg is
   impure function as_stream(uart_slave : uart_slave_t) return stream_slave_t;
   impure function as_sync(uart_master : uart_master_t) return sync_handle_t;
   impure function as_sync(uart_slave : uart_slave_t) return sync_handle_t;
+  function get_std_cfg(uart_master : uart_master_t) return std_cfg_t;
+  function get_std_cfg(uart_slave : uart_slave_t) return std_cfg_t;
 
   constant uart_set_baud_rate_msg : msg_type_t := new_msg_type("uart set baud rate");
 end package;
@@ -107,12 +109,12 @@ package body uart_pkg is
 
   impure function as_stream(uart_master : uart_master_t) return stream_master_t is
   begin
-    return stream_master_t'(p_actor => get_actor(uart_master.p_std_cfg));
+    return stream_master_t'(p_std_cfg => uart_master.p_std_cfg);
   end;
 
   impure function as_stream(uart_slave : uart_slave_t) return stream_slave_t is
   begin
-    return stream_slave_t'(p_actor => get_actor(uart_slave.p_std_cfg));
+    return (p_std_cfg => uart_slave.p_std_cfg);
   end;
 
   impure function as_sync(uart_master : uart_master_t) return sync_handle_t is
@@ -123,6 +125,16 @@ package body uart_pkg is
   impure function as_sync(uart_slave : uart_slave_t) return sync_handle_t is
   begin
     return get_actor(uart_slave.p_std_cfg);
+  end;
+
+  function get_std_cfg(uart_master : uart_master_t) return std_cfg_t is
+  begin
+    return uart_master.p_std_cfg;
+  end;
+
+  function get_std_cfg(uart_slave : uart_slave_t) return std_cfg_t is
+  begin
+    return uart_slave.p_std_cfg;
   end;
 
   procedure set_baud_rate(signal net : inout network_t;

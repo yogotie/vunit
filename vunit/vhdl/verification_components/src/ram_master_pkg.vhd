@@ -134,7 +134,9 @@ package ram_master_pkg is
 
   -- Wait until all operations scheduled before this command has finished
   procedure wait_until_idle(signal net : inout network_t;
-                            ram_master : ram_master_t);
+    ram_master : ram_master_t);
+
+  function get_std_cfg(ram_master : ram_master_t) return std_cfg_t;
 
 end package;
 
@@ -305,6 +307,11 @@ package body ram_master_pkg is
                             ram_master : ram_master_t) is
   begin
     wait_until_idle(net, ram_master.p_bus_handle);
+  end;
+
+  function get_std_cfg(ram_master : ram_master_t) return std_cfg_t is
+  begin
+    return get_std_cfg(ram_master.p_bus_handle);
   end;
 
 end package body;

@@ -141,7 +141,11 @@ test_lib = ui.add_library("test_lib")
 bus_master_vci = VerificationComponentInterface.find(
     lib, "bus_master_pkg", "bus_master_t"
 )
-
+bus_master_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "bus_master_pkg", "tb_bus_master_t_compliance_template.vhd"),
+)
 VerificationComponent.find(lib, "axi_lite_master", bus_master_vci).add_vhdl_testbench(
     test_lib,
     join(root, "compliance_test"),
@@ -149,6 +153,11 @@ VerificationComponent.find(lib, "axi_lite_master", bus_master_vci).add_vhdl_test
 )
 
 axi_slave_vci = VerificationComponentInterface.find(lib, "axi_slave_pkg", "axi_slave_t")
+axi_slave_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "axi_slave_pkg", "tb_axi_slave_t_compliance_template.vhd"),
+)
 VerificationComponent.find(lib, "axi_read_slave", axi_slave_vci).add_vhdl_testbench(
     test_lib,
     join(root, "compliance_test"),
@@ -157,6 +166,13 @@ VerificationComponent.find(lib, "axi_read_slave", axi_slave_vci).add_vhdl_testbe
 
 axi_stream_master_vci = VerificationComponentInterface.find(
     lib, "axi_stream_pkg", "axi_stream_master_t"
+)
+axi_stream_master_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(
+        root, ".vc", "axi_stream_pkg", "tb_axi_stream_master_t_compliance_template.vhd"
+    ),
 )
 VerificationComponent.find(
     lib, "axi_stream_master", axi_stream_master_vci
@@ -169,6 +185,13 @@ VerificationComponent.find(
 axi_stream_slave_vci = VerificationComponentInterface.find(
     lib, "axi_stream_pkg", "axi_stream_slave_t"
 )
+axi_stream_slave_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(
+        root, ".vc", "axi_stream_pkg", "tb_axi_stream_slave_t_compliance_template.vhd"
+    ),
+)
 VerificationComponent.find(
     lib, "axi_stream_slave", axi_stream_slave_vci
 ).add_vhdl_testbench(
@@ -179,6 +202,13 @@ VerificationComponent.find(
 
 axi_stream_monitor_vci = VerificationComponentInterface.find(
     lib, "axi_stream_pkg", "axi_stream_monitor_t"
+)
+axi_stream_monitor_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(
+        root, ".vc", "axi_stream_pkg", "tb_axi_stream_monitor_t_compliance_template.vhd"
+    ),
 )
 VerificationComponent.find(
     lib, "axi_stream_monitor", axi_stream_monitor_vci
@@ -191,6 +221,16 @@ VerificationComponent.find(
 axi_stream_protocol_checker_vci = VerificationComponentInterface.find(
     lib, "axi_stream_pkg", "axi_stream_protocol_checker_t"
 )
+axi_stream_protocol_checker_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(
+        root,
+        ".vc",
+        "axi_stream_pkg",
+        "tb_axi_stream_protocol_checker_t_compliance_template.vhd",
+    ),
+)
 VerificationComponent.find(
     lib, "axi_stream_protocol_checker", axi_stream_protocol_checker_vci
 ).add_vhdl_testbench(
@@ -200,28 +240,28 @@ VerificationComponent.find(
 )
 
 uart_master_vci = VerificationComponentInterface.find(lib, "uart_pkg", "uart_master_t")
+uart_master_vci.add_vhdl_testbench(
+    test_lib, join(root, "compliance_test"),
+)
 VerificationComponent.find(lib, "uart_master", uart_master_vci).add_vhdl_testbench(
     test_lib, join(root, "compliance_test"),
 )
 
 uart_slave_vci = VerificationComponentInterface.find(lib, "uart_pkg", "uart_slave_t")
+uart_slave_vci.add_vhdl_testbench(
+    test_lib, join(root, "compliance_test"),
+)
 VerificationComponent.find(lib, "uart_slave", uart_slave_vci).add_vhdl_testbench(
     test_lib, join(root, "compliance_test"),
 )
 
-wishbone_slave_vci = VerificationComponentInterface.find(
-    lib, "wishbone_pkg", "wishbone_slave_t"
-)
-VerificationComponent.find(
-    lib, "wishbone_slave", wishbone_slave_vci
-).add_vhdl_testbench(
-    test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_wishbone_slave_compliance_template.vhd"),
-)
-
 wishbone_master_vci = VerificationComponentInterface.find(
     lib, "wishbone_pkg", "wishbone_master_t"
+)
+wishbone_master_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "wishbone_pkg", "tb_wishbone_master_t_compliance_template.vhd",),
 )
 VerificationComponent.find(
     lib, "wishbone_master", wishbone_master_vci
@@ -231,8 +271,27 @@ VerificationComponent.find(
     join(root, ".vc", "tb_wishbone_master_compliance_template.vhd"),
 )
 
+wishbone_slave_vci = VerificationComponentInterface.find(
+    lib, "wishbone_pkg", "wishbone_slave_t"
+)
+wishbone_slave_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "wishbone_pkg", "tb_wishbone_slave_t_compliance_template.vhd",),
+)
+VerificationComponent.find(
+    lib, "wishbone_slave", wishbone_slave_vci
+).add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "tb_wishbone_slave_compliance_template.vhd"),
+)
+
 std_logic_checker_vci = VerificationComponentInterface.find(
     lib, "signal_checker_pkg", "signal_checker_t"
+)
+std_logic_checker_vci.add_vhdl_testbench(
+    test_lib, join(root, "compliance_test"),
 )
 VerificationComponent.find(
     lib, "std_logic_checker", std_logic_checker_vci
@@ -245,10 +304,27 @@ VerificationComponent.find(
 ram_master_vci = VerificationComponentInterface.find(
     lib, "ram_master_pkg", "ram_master_t"
 )
+ram_master_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "ram_master_pkg", "tb_ram_master_t_compliance_template.vhd",),
+)
 VerificationComponent.find(lib, "ram_master", ram_master_vci).add_vhdl_testbench(
     test_lib,
     join(root, "compliance_test"),
     join(root, ".vc", "tb_ram_master_compliance_template.vhd"),
+)
+
+VerificationComponentInterface.find(
+    lib, "stream_master_pkg", "stream_master_t"
+).add_vhdl_testbench(
+    test_lib, join(root, "compliance_test"),
+)
+
+VerificationComponentInterface.find(
+    lib, "stream_slave_pkg", "stream_slave_t"
+).add_vhdl_testbench(
+    test_lib, join(root, "compliance_test"),
 )
 
 ui.set_compile_option("rivierapro.vcom_flags", ["-dbg"])

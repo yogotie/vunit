@@ -36,6 +36,11 @@ package body bus_master_pkg is
             p_fail_on_unexpected_msg_type => work.vc_pkg.fail_on_unexpected_msg_type(p_std_cfg));
   end;
 
+  function get_std_cfg(master : bus_master_t) return std_cfg_t is
+  begin
+    return (master.p_actor, master.p_logger, master.p_checker, master.p_fail_on_unexpected_msg_type);
+  end;
+
   function get_actor(bus_handle : bus_master_t) return actor_t is
   begin
     return bus_handle.p_actor;

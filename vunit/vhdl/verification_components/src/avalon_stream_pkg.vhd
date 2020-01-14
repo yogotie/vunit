@@ -8,6 +8,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 use work.logger_pkg.all;
+use work.checker_pkg.all;
 use work.stream_master_pkg.all;
 use work.stream_slave_pkg.all;
 context work.com_context;
@@ -31,6 +32,8 @@ package avalon_stream_pkg is
   end record;
 
   constant avalon_stream_logger : logger_t := get_logger("vunit_lib:avalon_stream_pkg");
+  constant avalon_stream_checker : checker_t := new_checker(avalon_stream_logger);
+
   impure function new_avalon_source(data_length : natural;
                                         valid_high_probability : real := 1.0;
                                         logger : logger_t := avalon_stream_logger;
@@ -125,12 +128,12 @@ package body avalon_stream_pkg is
 
   impure function as_stream(source : avalon_source_t) return stream_master_t is
   begin
-    return (p_actor => source.p_actor);
+    return (p_std_cfg => (source.p_actor, source.p_logger, avalon_stream_checker, true)); -- TODO
   end;
 
   impure function as_stream(sink : avalon_sink_t) return stream_slave_t is
   begin
-    return (p_actor => sink.p_actor);
+    return (p_std_cfg => (sink.p_actor, sink.p_logger, avalon_stream_checker, true)); -- TODO
 end;
 
   procedure push_avalon_stream(signal net : inout network_t;

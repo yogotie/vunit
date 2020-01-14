@@ -49,6 +49,8 @@ package axi_slave_pkg is
                                 checker : checker_t := null_checker;
                                 fail_on_unexpected_msg_type : boolean := true) return axi_slave_t;
 
+  function get_std_cfg(axi_slave : axi_slave_t) return std_cfg_t;
+
   impure function as_sync(axi_slave : axi_slave_t) return sync_handle_t;
 
   -- Return the actor used by the axi_slave
@@ -180,6 +182,11 @@ package body axi_slave_pkg is
             p_initial_min_response_latency => min_response_latency,
             p_initial_max_response_latency => max_response_latency,
             p_memory => to_vc_interface(memory, logger));
+  end;
+
+  function get_std_cfg(axi_slave : axi_slave_t) return std_cfg_t is
+  begin
+    return axi_slave.p_std_cfg;
   end;
 
   impure function as_sync(axi_slave : axi_slave_t) return sync_handle_t is

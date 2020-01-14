@@ -128,7 +128,12 @@ class VerificationComponent:
             else:
                 constructor += "(\n"
                 for parameter in unspecified_parameters:
-                    if parameter in ["actor", "logger", "checker"]:
+                    if parameter in [
+                        "actor",
+                        "logger",
+                        "checker",
+                        "fail_on_unexpected_msg_type",
+                    ]:
                         continue
                     constructor += "    %s => ,\n" % parameter
                 constructor = constructor[:-2] + "\n  );\n"

@@ -46,6 +46,8 @@ package bus_master_pkg is
                           checker : checker_t := null_checker;
                           fail_on_unexpected_msg_type : boolean := true) return bus_master_t;
 
+  function get_std_cfg(master : bus_master_t) return std_cfg_t;
+
   -- Return the actor used by the bus master
   function get_actor(bus_handle : bus_master_t) return actor_t;
 

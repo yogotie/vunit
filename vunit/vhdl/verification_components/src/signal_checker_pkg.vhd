@@ -42,6 +42,7 @@ package signal_checker_pkg is
     signal_checker : signal_checker_t);
 
   impure function as_sync(signal_checker : signal_checker_t) return sync_handle_t;
+  function get_std_cfg(signal_checker : signal_checker_t) return std_cfg_t;
 
   -- Private message type definitions
   constant expect_msg : msg_type_t := new_msg_type("expect");
@@ -87,6 +88,12 @@ package body signal_checker_pkg is
   begin
     return get_actor(signal_checker.p_std_cfg);
   end;
+
+  function get_std_cfg(signal_checker : signal_checker_t) return std_cfg_t is
+  begin
+    return signal_checker.p_std_cfg;
+  end;
+
 
 
 end package body;
