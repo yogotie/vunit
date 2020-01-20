@@ -164,6 +164,12 @@ VerificationComponent.find(lib, "axi_read_slave", axi_slave_vci).add_vhdl_testbe
     join(root, ".vc", "tb_axi_read_slave_compliance_template.vhd"),
 )
 
+VerificationComponent.find(lib, "axi_write_slave", axi_slave_vci).add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "tb_axi_write_slave_compliance_template.vhd"),
+)
+
 axi_stream_master_vci = VerificationComponentInterface.find(
     lib, "axi_stream_pkg", "axi_stream_master_t"
 )
