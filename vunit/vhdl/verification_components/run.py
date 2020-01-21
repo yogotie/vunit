@@ -333,6 +333,21 @@ VerificationComponentInterface.find(
     test_lib, join(root, "compliance_test"),
 )
 
+bus2memory_vci = VerificationComponentInterface.find(
+    lib, "bus2memory_pkg", "bus2memory_t"
+)
+bus2memory_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "bus2memory_pkg", "tb_bus2memory_t_compliance_template.vhd"),
+)
+VerificationComponent.find(lib, "bus2memory", bus2memory_vci).add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "tb_bus2memory_compliance_template.vhd"),
+)
+
+
 ui.set_compile_option("rivierapro.vcom_flags", ["-dbg"])
 
 ui.main()
