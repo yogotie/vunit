@@ -393,18 +393,23 @@ end architecture;
         tb_code = Template(
             template_code[: match.start()]
             + """
-    constant actor1 : actor_t := new_actor;
+    constant actor1 : actor_t := new_actor("actor1");
     constant logger1 : logger_t := get_logger("logger1");
     constant checker_logger1 : logger_t := get_logger("checker1");
     constant checker1 : checker_t := new_checker(checker_logger1);
 
-    constant actor2 : actor_t := new_actor;
+    constant actor2 : actor_t := new_actor("actor2");
     constant logger2 : logger_t := get_logger("logger2");
     constant checker_logger2 : logger_t := get_logger("checker2");
     constant checker2 : checker_t := new_checker(checker_logger2);
 
-    variable handle1, handle2 : ${vc_handle_t};
-    variable std_cfg1, std_cfg2 : std_cfg_t;
+    constant actor3 : actor_t := new_actor("actor3");
+    constant logger3 : logger_t := get_logger("logger3");
+    constant checker_logger3 : logger_t := get_logger("checker3");
+    constant checker3 : checker_t := new_checker(checker_logger3);
+
+    variable handle1, handle2, handle3 : ${vc_handle_t};
+    variable std_cfg1, std_cfg2, std_cfg3 : std_cfg_t;
   begin
     test_runner_setup(runner, runner_cfg);
 
@@ -420,9 +425,9 @@ ${handle1}
         "Failed to configure fail_on_unexpected_msg_type = true with ${vc_constructor_name}");
 
 ${handle2}
-        std_cfg1 := get_std_cfg(handle1);
+        std_cfg2 := get_std_cfg(handle2);
 
-        check(fail_on_unexpected_msg_type(std_cfg1) = false,
+        check(fail_on_unexpected_msg_type(std_cfg2) = false,
         "Failed to configure fail_on_unexpected_msg_type = false with ${vc_constructor_name}");
 
       elsif run("Test handle independence") then
@@ -446,8 +451,8 @@ ${handle4}
         check(get_logger(std_cfg1) /= null_logger, "No valid default logger created by ${vc_constructor_name}");
 
 ${handle5}
-        std_cfg1 := get_std_cfg(handle1);
-        check(get_logger(std_cfg1) /= null_logger, "No valid default logger created by ${vc_constructor_name}");
+        std_cfg2 := get_std_cfg(handle2);
+        check(get_logger(std_cfg2) /= null_logger, "No valid default logger created by ${vc_constructor_name}");
 
       elsif run("Test default checker") then
 ${handle6}
@@ -455,13 +460,13 @@ ${handle6}
         check(get_checker(std_cfg1) /= null_checker, "No valid default checker created by ${vc_constructor_name}");
 
 ${handle7}
-        std_cfg1 := get_std_cfg(handle1);
-        check(get_checker(std_cfg1) /= null_checker, "No valid default checker created by ${vc_constructor_name}");
+        std_cfg2 := get_std_cfg(handle2);
+        check(get_checker(std_cfg2) /= null_checker, "No valid default checker created by ${vc_constructor_name}");
 
 ${handle8}
-        std_cfg1 := get_std_cfg(handle1);
-        check(get_checker(std_cfg1) /= null_checker, "No valid default checker created by ${vc_constructor_name}");
-        check(get_logger(get_checker(std_cfg1)) = logger1,
+        std_cfg3 := get_std_cfg(handle3);
+        check(get_checker(std_cfg3) /= null_checker, "No valid default checker created by ${vc_constructor_name}");
+        check(get_logger(get_checker(std_cfg3)) = logger3,
         "Default checker not based on logger provided to ${vc_constructor_name}");
 
       end if;
@@ -484,10 +489,10 @@ end architecture;
                 fail_on_unexpected_msg_type="true",
             ),
             handle2=create_handle_assignment(
-                "handle1",
-                actor="actor1",
-                logger="logger1",
-                checker="checker1",
+                "handle2",
+                actor="actor2",
+                logger="logger2",
+                checker="checker2",
                 fail_on_unexpected_msg_type="false",
             ),
             handle3=create_handle_assignment(
@@ -504,25 +509,25 @@ end architecture;
                 fail_on_unexpected_msg_type="true",
             ),
             handle5=create_handle_assignment(
-                "handle1",
-                actor="actor1",
+                "handle2",
+                actor="actor2",
                 logger="null_logger",
-                checker="checker1",
+                checker="checker2",
                 fail_on_unexpected_msg_type="true",
             ),
             handle6=create_handle_assignment(
                 "handle1", actor="actor1", fail_on_unexpected_msg_type="true",
             ),
             handle7=create_handle_assignment(
-                "handle1",
-                actor="actor1",
+                "handle2",
+                actor="actor2",
                 checker="null_checker",
                 fail_on_unexpected_msg_type="true",
             ),
             handle8=create_handle_assignment(
-                "handle1",
-                actor="actor1",
-                logger="logger1",
+                "handle3",
+                actor="actor3",
+                logger="logger3",
                 fail_on_unexpected_msg_type="true",
             ),
         )

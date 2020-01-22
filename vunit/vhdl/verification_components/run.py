@@ -347,6 +347,33 @@ VerificationComponent.find(lib, "bus2memory", bus2memory_vci).add_vhdl_testbench
     join(root, ".vc", "tb_bus2memory_compliance_template.vhd"),
 )
 
+avalon_master_vci = VerificationComponentInterface.find(
+    lib, "avalon_pkg", "avalon_master_t"
+)
+avalon_master_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "avalon_pkg", "tb_avalon_master_t_compliance_template.vhd",),
+)
+VerificationComponent.find(lib, "avalon_master", avalon_master_vci).add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "tb_avalon_master_compliance_template.vhd"),
+)
+
+avalon_slave_vci = VerificationComponentInterface.find(
+    lib, "avalon_pkg", "avalon_slave_t"
+)
+avalon_slave_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "avalon_pkg", "tb_avalon_slave_t_compliance_template.vhd",),
+)
+VerificationComponent.find(lib, "avalon_slave", avalon_slave_vci).add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "tb_avalon_slave_compliance_template.vhd"),
+)
 
 ui.set_compile_option("rivierapro.vcom_flags", ["-dbg"])
 
