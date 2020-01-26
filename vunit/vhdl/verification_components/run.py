@@ -375,6 +375,37 @@ VerificationComponent.find(lib, "avalon_slave", avalon_slave_vci).add_vhdl_testb
     join(root, ".vc", "tb_avalon_slave_compliance_template.vhd"),
 )
 
+avalon_source_vci = VerificationComponentInterface.find(
+    lib, "avalon_stream_pkg", "avalon_source_t"
+)
+avalon_source_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(
+        root, ".vc", "avalon_stream_pkg", "tb_avalon_source_t_compliance_template.vhd",
+    ),
+)
+VerificationComponent.find(lib, "avalon_source", avalon_source_vci).add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "tb_avalon_source_compliance_template.vhd"),
+)
+
+avalon_sink_vci = VerificationComponentInterface.find(
+    lib, "avalon_stream_pkg", "avalon_sink_t"
+)
+avalon_sink_vci.add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "avalon_stream_pkg", "tb_avalon_sink_t_compliance_template.vhd",),
+)
+VerificationComponent.find(lib, "avalon_sink", avalon_sink_vci).add_vhdl_testbench(
+    test_lib,
+    join(root, "compliance_test"),
+    join(root, ".vc", "tb_avalon_sink_compliance_template.vhd"),
+)
+
+
 ui.set_compile_option("rivierapro.vcom_flags", ["-dbg"])
 
 ui.main()
