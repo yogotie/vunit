@@ -60,8 +60,8 @@ begin
       uart_send(pop_std_ulogic_vector(msg), tx, baud_rate);
     elsif msg_type = uart_set_baud_rate_msg then
       baud_rate := pop(msg);
-    elsif fail_on_unexpected_msg_type(uart.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(uart.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, uart.p_std_cfg);
     end if;
   end process;
 

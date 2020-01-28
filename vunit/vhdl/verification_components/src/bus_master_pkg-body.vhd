@@ -16,49 +16,46 @@ use work.check_pkg.all;
 
 package body bus_master_pkg is
 
-  impure function new_bus(data_length                 : natural;
-                          address_length              : natural;
-                          byte_length                 : natural   := 8;
-                          logger                      : logger_t  := bus_logger;
-                          actor                       : actor_t   := null_actor;
-                          checker                     : checker_t := null_checker;
-                          fail_on_unexpected_msg_type : boolean   := true) return bus_master_t is
+  impure function new_bus(data_length                : natural;
+                          address_length             : natural;
+                          byte_length                : natural                      := 8;
+                          logger                     : logger_t                     := bus_logger;
+                          actor                      : actor_t                      := null_actor;
+                          checker                    : checker_t                    := null_checker;
+                          unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail) return bus_master_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      bus_logger, bus_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      bus_logger, bus_checker, actor, logger, checker, unexpected_msg_type_policy
     );
   begin
-    return (p_actor => get_actor(p_std_cfg),
+    return (p_std_cfg => p_std_cfg,
             p_data_length => data_length,
             p_address_length => address_length,
-            p_byte_length => byte_length,
-            p_logger => get_logger(p_std_cfg),
-            p_checker => get_checker(p_std_cfg),
-            p_fail_on_unexpected_msg_type => work.vc_pkg.fail_on_unexpected_msg_type(p_std_cfg));
+            p_byte_length => byte_length);
   end;
 
-  function get_std_cfg(master : bus_master_t) return std_cfg_t is
+  impure function get_std_cfg(master : bus_master_t) return std_cfg_t is
   begin
-    return (master.p_actor, master.p_logger, master.p_checker, master.p_fail_on_unexpected_msg_type);
+    return master.p_std_cfg;
   end;
 
-  function get_actor(bus_handle : bus_master_t) return actor_t is
+  impure function get_actor(bus_handle : bus_master_t) return actor_t is
   begin
-    return bus_handle.p_actor;
+    return get_actor(bus_handle.p_std_cfg);
   end;
 
-  function get_logger(bus_handle : bus_master_t) return logger_t is
+  impure function get_logger(bus_handle : bus_master_t) return logger_t is
   begin
-    return bus_handle.p_logger;
+    return get_logger(bus_handle.p_std_cfg);
   end;
 
-  function get_checker(bus_handle : bus_master_t) return checker_t is
+  impure function get_checker(bus_handle : bus_master_t) return checker_t is
   begin
-    return bus_handle.p_checker;
+    return get_checker(bus_handle.p_std_cfg);
   end;
 
-  function fail_on_unexpected_msg_type(bus_handle : bus_master_t) return boolean is
+  impure function unexpected_msg_type_policy(bus_handle : bus_master_t) return unexpected_msg_type_policy_t is
   begin
-    return bus_handle.p_fail_on_unexpected_msg_type;
+    return unexpected_msg_type_policy(bus_handle.p_std_cfg);
   end;
 
   impure function data_length(bus_handle : bus_master_t) return natural is

@@ -46,20 +46,20 @@ package uart_pkg is
   constant default_baud_rate : natural := 115200;
   constant default_idle_state : std_logic := '1';
   constant default_data_length : positive := 8;
-  impure function new_uart_master(initial_baud_rate           : natural   := default_baud_rate;
-                                  idle_state                  : std_logic := default_idle_state;
-                                  logger                      : logger_t  := uart_logger;
-                                  actor                       : actor_t   := null_actor;
-                                  checker                     : checker_t := null_checker;
-                                  fail_on_unexpected_msg_type : boolean   := true
+  impure function new_uart_master(initial_baud_rate          : natural                      := default_baud_rate;
+                                  idle_state                 : std_logic                    := default_idle_state;
+                                  logger                     : logger_t                     := uart_logger;
+                                  actor                      : actor_t                      := null_actor;
+                                  checker                    : checker_t                    := null_checker;
+                                  unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
                                  ) return uart_master_t;
-  impure function new_uart_slave(initial_baud_rate           : natural   := default_baud_rate;
-                                 idle_state                  : std_logic := default_idle_state;
-                                 data_length                 : positive  := default_data_length;
-                                 logger                      : logger_t  := uart_logger;
-                                 actor                       : actor_t   := null_actor;
-                                 checker                     : checker_t := null_checker;
-                                 fail_on_unexpected_msg_type : boolean   := true) return uart_slave_t;
+  impure function new_uart_slave(initial_baud_rate          : natural                      := default_baud_rate;
+                                 idle_state                 : std_logic                    := default_idle_state;
+                                 data_length                : positive                     := default_data_length;
+                                 logger                     : logger_t                     := uart_logger;
+                                 actor                      : actor_t                      := null_actor;
+                                 checker                    : checker_t                    := null_checker;
+                                 unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail) return uart_slave_t;
 
   impure function as_stream(uart_master : uart_master_t) return stream_master_t;
   impure function as_stream(uart_slave : uart_slave_t) return stream_slave_t;
@@ -73,15 +73,15 @@ end package;
 
 package body uart_pkg is
 
-  impure function new_uart_master(initial_baud_rate           : natural   := default_baud_rate;
-                                  idle_state                  : std_logic := default_idle_state;
-                                  logger                      : logger_t  := uart_logger;
-                                  actor                       : actor_t   := null_actor;
-                                  checker                     : checker_t := null_checker;
-                                  fail_on_unexpected_msg_type : boolean   := true
+  impure function new_uart_master(initial_baud_rate          : natural                      := default_baud_rate;
+                                  idle_state                 : std_logic                    := default_idle_state;
+                                  logger                     : logger_t                     := uart_logger;
+                                  actor                      : actor_t                      := null_actor;
+                                  checker                    : checker_t                    := null_checker;
+                                  unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
                                  ) return uart_master_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      uart_logger, uart_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      uart_logger, uart_checker, actor, logger, checker, unexpected_msg_type_policy
     );
 
   begin
@@ -90,15 +90,15 @@ package body uart_pkg is
             p_idle_state => idle_state);
   end;
 
-  impure function new_uart_slave(initial_baud_rate           : natural   := default_baud_rate;
-                                 idle_state                  : std_logic := default_idle_state;
-                                 data_length                 : positive  := default_data_length;
-                                 logger                      : logger_t  := uart_logger;
-                                 actor                       : actor_t   := null_actor;
-                                 checker                     : checker_t := null_checker;
-                                 fail_on_unexpected_msg_type : boolean   := true) return uart_slave_t is
+  impure function new_uart_slave(initial_baud_rate          : natural                      := default_baud_rate;
+                                 idle_state                 : std_logic                    := default_idle_state;
+                                 data_length                : positive                     := default_data_length;
+                                 logger                     : logger_t                     := uart_logger;
+                                 actor                      : actor_t                      := null_actor;
+                                 checker                    : checker_t                    := null_checker;
+                                 unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail) return uart_slave_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      uart_logger, uart_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      uart_logger, uart_checker, actor, logger, checker, unexpected_msg_type_policy
     );
   begin
     return (p_std_cfg  => p_std_cfg,

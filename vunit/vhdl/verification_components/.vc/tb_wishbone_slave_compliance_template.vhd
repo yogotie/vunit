@@ -14,6 +14,7 @@ use ieee.std_logic_1164.all;
 use osvvm.randompkg.all;
 use vunit_lib.memory_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 use vunit_lib.wishbone_pkg.all;
 
 entity tb_wishbone_slave_compliance is

@@ -12,6 +12,7 @@ context vunit_lib.vunit_context;
 use ieee.std_logic_1164.all;
 use vunit_lib.signal_checker_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 
 entity tb_std_logic_checker_compliance is
   generic(

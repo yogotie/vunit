@@ -11,6 +11,7 @@ use ieee.std_logic_1164.all;
 use work.queue_pkg.all;
 use work.bus_master_pkg.all;
 use work.sync_pkg.all;
+use work.vc_pkg.all;
 use work.axi_pkg.all;
 use work.axi_slave_pkg.all;
 use work.axi_slave_private_pkg.all;
@@ -68,8 +69,8 @@ begin
         wait until rising_edge(aclk) and is_empty(transaction_token_queue);
       end if;
       handle_wait_until_idle(net, msg_type, request_msg);
-    elsif fail_on_unexpected_msg_type(bus_handle) then
-      unexpected_msg_type(msg_type, get_checker(bus_handle));
+    else
+      unexpected_msg_type(msg_type, get_std_cfg(bus_handle));
     end if;
   end process;
 

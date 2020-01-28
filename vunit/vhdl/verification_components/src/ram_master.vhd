@@ -13,6 +13,7 @@ use work.queue_pkg.all;
 use work.bus_master_pkg.all;
 use work.ram_master_pkg.all;
 use work.sync_pkg.all;
+use work.vc_pkg.all;
 context work.com_context;
 
 entity ram_master is
@@ -65,8 +66,8 @@ begin
       end loop;
       handle_sync_message(net, msg_type, request_msg);
 
-    elsif fail_on_unexpected_msg_type(ram_master) then
-        unexpected_msg_type(msg_type, get_checker(ram_master));
+    else
+        unexpected_msg_type(msg_type, get_std_cfg(ram_master));
     end if;
   end process;
 

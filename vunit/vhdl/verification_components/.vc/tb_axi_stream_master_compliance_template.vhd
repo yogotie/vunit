@@ -13,6 +13,7 @@ use vunit_lib.axi_stream_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.stream_master_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 
 entity tb_axi_stream_master_compliance is
   generic(

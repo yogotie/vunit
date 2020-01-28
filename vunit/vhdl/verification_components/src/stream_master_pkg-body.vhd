@@ -12,13 +12,13 @@ context work.com_context;
 
 package body stream_master_pkg is
   impure function new_stream_master(
-    logger                      : logger_t                      := stream_master_logger;
-    actor                       : actor_t                       := null_actor;
-    checker                     : checker_t                     := null_checker;
-    fail_on_unexpected_msg_type : boolean                       := true
+    logger                     : logger_t                     := stream_master_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return stream_master_t is
     constant p_std_cfg       : std_cfg_t := create_std_cfg(
-      stream_master_logger, stream_master_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      stream_master_logger, stream_master_checker, actor, logger, checker, unexpected_msg_type_policy
     );
 
     begin

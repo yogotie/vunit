@@ -16,6 +16,7 @@ use vunit_lib.axi_slave_pkg.all;
 use vunit_lib.axi_slave_private_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 
 entity tb_axi_read_slave_compliance is
   generic(

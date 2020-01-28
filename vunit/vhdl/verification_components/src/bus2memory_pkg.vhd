@@ -25,17 +25,17 @@ package bus2memory_pkg is
   constant bus2memory_checker : checker_t := new_checker(bus2memory_logger);
 
   impure function new_bus2memory(
-    data_length                 : natural;
-    address_length              : natural;
-    memory                      : memory_t;
-    byte_length                 : natural   := 8;
-    logger                      : logger_t  := bus2memory_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    data_length                : natural;
+    address_length             : natural;
+    memory                     : memory_t;
+    byte_length                : natural                      := 8;
+    logger                     : logger_t                     := bus2memory_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return bus2memory_t;
 
-  function get_std_cfg(bus2memory : bus2memory_t) return std_cfg_t;
+  impure function get_std_cfg(bus2memory : bus2memory_t) return std_cfg_t;
   impure function as_bus_master(bus2memory : bus2memory_t) return bus_master_t;
   impure function as_sync(bus2memory : bus2memory_t) return sync_handle_t;
 
@@ -43,22 +43,24 @@ end package;
 
 package body bus2memory_pkg is
   impure function new_bus2memory(
-    data_length                 : natural;
-    address_length              : natural;
-    memory                      : memory_t;
-    byte_length                 : natural   := 8;
-    logger                      : logger_t  := bus2memory_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    data_length                : natural;
+    address_length             : natural;
+    memory                     : memory_t;
+    byte_length                : natural                      := 8;
+    logger                     : logger_t                     := bus2memory_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return bus2memory_t is
-    constant p_bus_handle : bus_master_t := new_bus(data_length, address_length, byte_length, logger, actor, checker, fail_on_unexpected_msg_type);
+    constant p_bus_handle : bus_master_t := new_bus(data_length, address_length, byte_length, logger, actor, checker,
+      unexpected_msg_type_policy
+    );
   begin
     return (p_bus_handle => p_bus_handle,
             p_memory     => memory);
   end;
 
-  function get_std_cfg(bus2memory : bus2memory_t) return std_cfg_t is
+  impure function get_std_cfg(bus2memory : bus2memory_t) return std_cfg_t is
   begin
     return get_std_cfg(bus2memory.p_bus_handle);
   end;

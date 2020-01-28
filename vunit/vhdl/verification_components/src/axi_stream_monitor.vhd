@@ -46,8 +46,8 @@ begin
           wait_until_idle(net, as_sync(monitor.p_protocol_checker));
       end if;
       handle_wait_until_idle(net, msg_type, request_msg);
-    elsif fail_on_unexpected_msg_type(monitor.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(monitor.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, monitor.p_std_cfg);
     end if;
   end process;
 

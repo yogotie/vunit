@@ -14,6 +14,7 @@ use work.bus_master_pkg.all;
 use work.memory_pkg.all;
 use work.bus2memory_pkg.all;
 use work.sync_pkg.all;
+use work.vc_pkg.all;
 
 entity bus2memory is
   generic (
@@ -55,8 +56,8 @@ begin
             write_word(my_memory, to_integer(unsigned(address))+i, data(blen*(i+1)-1 downto blen*i));
           end if;
         end loop;
-      elsif fail_on_unexpected_msg_type(bus2memory_handle.p_bus_handle) then
-        unexpected_msg_type(msg_type, get_checker(bus2memory_handle.p_bus_handle));
+      else
+        unexpected_msg_type(msg_type, get_std_cfg(bus2memory_handle.p_bus_handle));
       end if;
     end loop;
   end process;

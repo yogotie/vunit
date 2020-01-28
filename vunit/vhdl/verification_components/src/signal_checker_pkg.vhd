@@ -23,11 +23,11 @@ package signal_checker_pkg is
   constant signal_checker_checker : checker_t := new_checker(signal_checker_logger);
 
   impure function new_signal_checker(
-    logger                      : logger_t  := signal_checker_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true)
-    return signal_checker_t;
+    logger                     : logger_t                     := signal_checker_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail)
+  return signal_checker_t;
 
   -- Add one value to the expect queue
   -- Allow event to occur within event_time += margin including end points
@@ -52,13 +52,13 @@ end package;
 
 package body signal_checker_pkg is
   impure function new_signal_checker(
-    logger                      : logger_t  := signal_checker_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true)
-    return signal_checker_t is
+    logger                     : logger_t                     := signal_checker_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail)
+  return signal_checker_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      signal_checker_logger, signal_checker_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      signal_checker_logger, signal_checker_checker, actor, logger, checker, unexpected_msg_type_policy
     );
 
   begin

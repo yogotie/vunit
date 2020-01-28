@@ -34,24 +34,24 @@ package wishbone_pkg is
   constant wishbone_checker : checker_t := new_checker(wishbone_logger);
 
   impure function new_wishbone_master(
-    data_length : natural;
-    address_length : natural;
-    strobe_high_probability     : real range 0.0 to 1.0 := 1.0;
-    byte_length : natural := 8;
-    logger                      : logger_t  := wishbone_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    data_length                : natural;
+    address_length             : natural;
+    strobe_high_probability    : real range 0.0 to 1.0        := 1.0;
+    byte_length                : natural                      := 8;
+    logger                     : logger_t                     := wishbone_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return wishbone_master_t;
 
   impure function new_wishbone_slave(
-    memory                      : memory_t;
-    ack_high_probability        : real      := 1.0;
-    stall_high_probability      : real      := 0.0;
-    logger                      : logger_t  := wishbone_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    memory                     : memory_t;
+    ack_high_probability       : real                         := 1.0;
+    stall_high_probability     : real                         := 0.0;
+    logger                     : logger_t                     := wishbone_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return wishbone_slave_t;
 
   impure function as_sync(master : wishbone_master_t) return sync_handle_t;
@@ -59,16 +59,16 @@ package wishbone_pkg is
   impure function as_sync(slave : wishbone_slave_t) return sync_handle_t;
 
   -- Return the actor used by the Wishbone master
-  function get_actor(wishbone_master : wishbone_master_t) return actor_t;
+  impure function get_actor(wishbone_master : wishbone_master_t) return actor_t;
 
   -- Return the logger used by the Wishbone master
-  function get_logger(wishbone_master : wishbone_master_t) return logger_t;
+  impure function get_logger(wishbone_master : wishbone_master_t) return logger_t;
 
   -- Return the checker used by the Wishbone master
-  function get_checker(wishbone_master : wishbone_master_t) return checker_t;
+  impure function get_checker(wishbone_master : wishbone_master_t) return checker_t;
 
-  -- Return true if the bus VC fails on unexpected messages to the actor
-  function fail_on_unexpected_msg_type(wishbone_master : wishbone_master_t) return boolean;
+  -- Return policy for handling unexpected messages to the actor
+  impure function unexpected_msg_type_policy(wishbone_master : wishbone_master_t) return unexpected_msg_type_policy_t;
 
   -- Return the length of the data on the Wishbone bus
   impure function data_length(wishbone_master : wishbone_master_t) return natural;
@@ -156,39 +156,41 @@ package wishbone_pkg is
   procedure wait_until_idle(signal net      : inout network_t;
     wishbone_master : wishbone_master_t);
 
-  function get_std_cfg(wishbone_master : wishbone_master_t) return std_cfg_t;
-  function get_std_cfg(wishbone_slave : wishbone_slave_t) return std_cfg_t;
+  impure function get_std_cfg(wishbone_master : wishbone_master_t) return std_cfg_t;
+  impure function get_std_cfg(wishbone_slave : wishbone_slave_t) return std_cfg_t;
 
 end package;
 
 package body wishbone_pkg is
   impure function new_wishbone_master(
-    data_length : natural;
-    address_length : natural;
-    strobe_high_probability     : real range 0.0 to 1.0 := 1.0;
-    byte_length : natural := 8;
-    logger                      : logger_t  := wishbone_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    data_length                : natural;
+    address_length             : natural;
+    strobe_high_probability    : real range 0.0 to 1.0        := 1.0;
+    byte_length                : natural                      := 8;
+    logger                     : logger_t                     := wishbone_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return wishbone_master_t is
-    constant p_bus_handle : bus_master_t := new_bus(data_length, address_length, byte_length, logger, actor, checker, fail_on_unexpected_msg_type);
+    constant p_bus_handle : bus_master_t := new_bus(data_length, address_length, byte_length, logger, actor, checker,
+      unexpected_msg_type_policy
+    );
   begin
     return (p_bus_handle => p_bus_handle,
       p_strobe_high_probability => strobe_high_probability);
   end;
 
   impure function new_wishbone_slave(
-    memory                      : memory_t;
-    ack_high_probability        : real      := 1.0;
-    stall_high_probability      : real      := 0.0;
-    logger                      : logger_t  := wishbone_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    memory                     : memory_t;
+    ack_high_probability       : real                         := 1.0;
+    stall_high_probability     : real                         := 0.0;
+    logger                     : logger_t                     := wishbone_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return wishbone_slave_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      wishbone_logger, wishbone_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      wishbone_logger, wishbone_checker, actor, logger, checker, unexpected_msg_type_policy
     );
 
   begin
@@ -215,24 +217,24 @@ package body wishbone_pkg is
     return get_actor(slave.p_std_cfg);
   end;
 
-  function get_actor(wishbone_master : wishbone_master_t) return actor_t is
+  impure function get_actor(wishbone_master : wishbone_master_t) return actor_t is
   begin
     return get_actor(wishbone_master.p_bus_handle);
   end;
 
-  function get_logger(wishbone_master : wishbone_master_t) return logger_t is
+  impure function get_logger(wishbone_master : wishbone_master_t) return logger_t is
   begin
     return get_logger(wishbone_master.p_bus_handle);
   end;
 
-  function get_checker(wishbone_master : wishbone_master_t) return checker_t is
+  impure function get_checker(wishbone_master : wishbone_master_t) return checker_t is
   begin
     return get_checker(wishbone_master.p_bus_handle);
   end;
 
-  function fail_on_unexpected_msg_type(wishbone_master : wishbone_master_t) return boolean is
+  impure function unexpected_msg_type_policy(wishbone_master : wishbone_master_t) return unexpected_msg_type_policy_t is
   begin
-    return fail_on_unexpected_msg_type(wishbone_master.p_bus_handle);
+    return unexpected_msg_type_policy(wishbone_master.p_bus_handle);
   end;
 
   impure function data_length(wishbone_master : wishbone_master_t) return natural is
@@ -357,12 +359,12 @@ package body wishbone_pkg is
     wait_until_idle(net, wishbone_master.p_bus_handle);
   end;
 
-  function get_std_cfg(wishbone_master : wishbone_master_t) return std_cfg_t is
+  impure function get_std_cfg(wishbone_master : wishbone_master_t) return std_cfg_t is
   begin
     return get_std_cfg(wishbone_master.p_bus_handle);
   end;
 
-  function get_std_cfg(wishbone_slave : wishbone_slave_t) return std_cfg_t is
+  impure function get_std_cfg(wishbone_slave : wishbone_slave_t) return std_cfg_t is
   begin
     return wishbone_slave.p_std_cfg;
   end;

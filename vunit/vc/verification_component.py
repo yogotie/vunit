@@ -132,7 +132,7 @@ class VerificationComponent:
                         "actor",
                         "logger",
                         "checker",
-                        "fail_on_unexpected_msg_type",
+                        "unexpected_msg_type_policy",
                     ]:
                         continue
                     constructor += "    %s => ,\n" % parameter
@@ -359,7 +359,7 @@ constant custom_actor : actor_t := new_actor("vc", inbox_size => 1);
       logger => logger,
       actor => actor,
       checker => checker,
-      fail_on_unexpected_msg_type => fail_on_unexpected_msg_type);
+      unexpected_msg_type_policy => unexpected_msg_type_policy);
   end;
 
   constant {vc_handle_name} : {vc_handle_t} := create_handle;
@@ -433,7 +433,7 @@ begin
       msg := new_msg(unexpected_msg);
       send(net, custom_actor, msg);
       wait for 1 ns;
-      if fail_on_unexpected_msg_type then
+      if unexpected_msg_type_policy = fail then
         check_only_log(error_logger, "Got unexpected message unexpected msg", failure);
       else
         check_no_log;
@@ -466,7 +466,7 @@ end process test_runner;""".format(
             new_generics = """use_custom_logger : boolean := false;
     use_custom_checker : boolean := false;
     use_custom_actor : boolean := false;
-    fail_on_unexpected_msg_type : boolean := true;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail;
     runner_cfg : string"""
 
             code, num_found_runner_cfg = subn(_runner_cfg_re, new_generics, code, 1)
@@ -556,7 +556,7 @@ end process test_runner;""".format(
         test.add_config(
             name="accept_unexpected_msg_type",
             generics=dict(
-                fail_on_unexpected_msg_type=False,
+                unexpected_msg_type_policy="ignore",
                 use_custom_logger=True,
                 use_custom_actor=True,
             ),
@@ -564,7 +564,7 @@ end process test_runner;""".format(
         test.add_config(
             name="fail_unexpected_msg_type_with_null_checker",
             generics=dict(
-                fail_on_unexpected_msg_type=True,
+                unexpected_msg_type_policy="fail",
                 use_custom_logger=True,
                 use_custom_actor=True,
             ),
@@ -572,7 +572,7 @@ end process test_runner;""".format(
         test.add_config(
             name="fail_unexpected_msg_type_with_custom_checker",
             generics=dict(
-                fail_on_unexpected_msg_type=True,
+                unexpected_msg_type_policy="fail",
                 use_custom_logger=True,
                 use_custom_checker=True,
                 use_custom_actor=True,

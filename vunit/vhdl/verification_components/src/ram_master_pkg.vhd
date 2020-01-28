@@ -25,30 +25,30 @@ package ram_master_pkg is
   constant ram_master_checker : checker_t := new_checker(ram_master_logger);
 
   impure function new_ram_master(
-    data_length                 : natural;
-    address_length              : natural;
-    latency                     : positive;
-    byte_length                 : natural   := 8;
-    logger                      : logger_t  := ram_master_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    data_length                : natural;
+    address_length             : natural;
+    latency                    : positive;
+    byte_length                : natural                      := 8;
+    logger                     : logger_t                     := ram_master_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return ram_master_t;
 
   impure function as_sync(ram_master : ram_master_t) return sync_handle_t;
   impure function as_bus_master(ram_master : ram_master_t) return bus_master_t;
 
   -- Return the actor used by the Wishbone master
-  function get_actor(ram_master : ram_master_t) return actor_t;
+  impure function get_actor(ram_master : ram_master_t) return actor_t;
 
   -- Return the logger used by the Wishbone master
-  function get_logger(ram_master : ram_master_t) return logger_t;
+  impure function get_logger(ram_master : ram_master_t) return logger_t;
 
   -- Return the checker used by the Wishbone master
-  function get_checker(ram_master : ram_master_t) return checker_t;
+  impure function get_checker(ram_master : ram_master_t) return checker_t;
 
-  -- Return true if the bus VC fails on unexpected messages to the actor
-  function fail_on_unexpected_msg_type(ram_master : ram_master_t) return boolean;
+  -- Return for handling unexpected messages to the actor
+  impure function unexpected_msg_type_policy(ram_master : ram_master_t) return unexpected_msg_type_policy_t;
 
   -- Return the length of the data on the Wishbone bus
   impure function data_length(ram_master : ram_master_t) return natural;
@@ -136,22 +136,24 @@ package ram_master_pkg is
   procedure wait_until_idle(signal net : inout network_t;
     ram_master : ram_master_t);
 
-  function get_std_cfg(ram_master : ram_master_t) return std_cfg_t;
+  impure function get_std_cfg(ram_master : ram_master_t) return std_cfg_t;
 
 end package;
 
 package body ram_master_pkg is
   impure function new_ram_master(
-    data_length                 : natural;
-    address_length              : natural;
-    latency                     : positive;
-    byte_length                 : natural   := 8;
-    logger                      : logger_t  := ram_master_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    data_length                : natural;
+    address_length             : natural;
+    latency                    : positive;
+    byte_length                : natural                      := 8;
+    logger                     : logger_t                     := ram_master_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return ram_master_t is
-    constant p_bus_handle : bus_master_t := new_bus(data_length, address_length, byte_length, logger, actor, checker, fail_on_unexpected_msg_type);
+    constant p_bus_handle : bus_master_t := new_bus(data_length, address_length, byte_length, logger, actor, checker,
+      unexpected_msg_type_policy
+    );
   begin
     return (p_bus_handle => p_bus_handle,
             p_latency    => latency);
@@ -167,24 +169,24 @@ package body ram_master_pkg is
     return ram_master.p_bus_handle;
   end;
 
-  function get_actor(ram_master : ram_master_t) return actor_t is
+  impure function get_actor(ram_master : ram_master_t) return actor_t is
   begin
     return get_actor(ram_master.p_bus_handle);
   end;
 
-  function get_logger(ram_master : ram_master_t) return logger_t is
+  impure function get_logger(ram_master : ram_master_t) return logger_t is
   begin
     return get_logger(ram_master.p_bus_handle);
   end;
 
-  function get_checker(ram_master : ram_master_t) return checker_t is
+  impure function get_checker(ram_master : ram_master_t) return checker_t is
   begin
     return get_checker(ram_master.p_bus_handle);
   end;
 
-  function fail_on_unexpected_msg_type(ram_master : ram_master_t) return boolean is
+  impure function unexpected_msg_type_policy(ram_master : ram_master_t) return unexpected_msg_type_policy_t is
   begin
-    return fail_on_unexpected_msg_type(ram_master.p_bus_handle);
+    return unexpected_msg_type_policy(ram_master.p_bus_handle);
   end;
 
   impure function data_length(ram_master : ram_master_t) return natural is
@@ -309,7 +311,7 @@ package body ram_master_pkg is
     wait_until_idle(net, ram_master.p_bus_handle);
   end;
 
-  function get_std_cfg(ram_master : ram_master_t) return std_cfg_t is
+  impure function get_std_cfg(ram_master : ram_master_t) return std_cfg_t is
   begin
     return get_std_cfg(ram_master.p_bus_handle);
   end;

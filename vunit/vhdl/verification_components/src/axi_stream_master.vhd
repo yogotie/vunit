@@ -73,8 +73,8 @@ begin
         exit when now = timestamp;
       end loop;
       handle_wait_until_idle(net, msg_type, request_msg);
-    elsif fail_on_unexpected_msg_type(master.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(master.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, master.p_std_cfg);
     end if;
   end process;
 
@@ -131,8 +131,8 @@ begin
           not_used := pop(transaction_token_queue);
           notification      <= not notification;
           wait on notification;
-        elsif fail_on_unexpected_msg_type(master.p_std_cfg) then
-          unexpected_msg_type(msg_type, get_checker(master.p_std_cfg));
+        else
+          unexpected_msg_type(msg_type, master.p_std_cfg);
         end if;
 
         delete(msg);

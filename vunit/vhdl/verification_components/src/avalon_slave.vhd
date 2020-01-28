@@ -54,10 +54,7 @@ begin
       msg_type := message_type(request_msg);
 
       handle_sync_message(net, msg_type, request_msg);
-
-      if fail_on_unexpected_msg_type(avalon_slave.p_std_cfg) then
-        unexpected_msg_type(msg_type, get_checker(avalon_slave.p_std_cfg));
-      end if;
+      unexpected_msg_type(msg_type, avalon_slave.p_std_cfg);
   end process;
 
   write_handler : process

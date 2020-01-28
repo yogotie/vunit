@@ -18,6 +18,7 @@ use work.check_pkg.all;
 use work.log_levels_pkg.all;
 use work.sync_pkg.all;
 use work.wishbone_pkg.all;
+use work.vc_pkg.all;
 
 library osvvm;
 use osvvm.RandomPkg.all;
@@ -96,8 +97,8 @@ begin
         end if;
         handle_sync_message(net, msg_type, request_msg);
 
-      elsif fail_on_unexpected_msg_type(wishbone_master) then
-        unexpected_msg_type(msg_type, get_checker(wishbone_master));
+      else
+        unexpected_msg_type(msg_type, get_std_cfg(wishbone_master));
       end if;
 
     end loop;

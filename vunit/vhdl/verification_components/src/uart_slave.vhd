@@ -50,8 +50,8 @@ begin
       push_boolean(reply_msg, false);
       reply(net, msg, reply_msg);
 
-    elsif fail_on_unexpected_msg_type(uart.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(uart.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, uart.p_std_cfg);
     end if;
 
   end process;

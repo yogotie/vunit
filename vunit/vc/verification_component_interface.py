@@ -125,6 +125,11 @@ class VerificationComponentInterface:
                     )
                 )
                 messages.append(
+                    "Found constructor function %s for %s but {} is lacking a default value".format(
+                        parameter_name
+                    )
+                )
+                messages.append(
                     "Found constructor function %s for %s but {} is the only allowed default "
                     "value for the {} parameter".format(
                         expected_default_value[parameter_name], parameter_name
@@ -148,14 +153,14 @@ class VerificationComponentInterface:
             logger="logger_t",
             actor="actor_t",
             checker="checker_t",
-            fail_on_unexpected_msg_type="boolean",
+            unexpected_msg_type_policy="unexpected_msg_type_policy_t",
         )
 
         expected_default_value = dict(
             logger=None,
             actor="null_actor",
             checker="null_checker",
-            fail_on_unexpected_msg_type=None,
+            unexpected_msg_type_policy=None,
         )
 
         messages = create_messages(required_parameter_types, expected_default_value)
@@ -177,7 +182,6 @@ class VerificationComponentInterface:
                 for identifier in parameter.identifier_list:
                     parameters[identifier] = parameter
 
-            parameters_missing_default_value = set()
             for parameter_name, parameter_type in required_parameter_types.items():
                 if parameter_name not in parameters:
                     break
@@ -191,8 +195,10 @@ class VerificationComponentInterface:
                 function_score[func.identifier] += 1
 
                 if not parameters[parameter_name].init_value:
-                    parameters_missing_default_value.add(parameter_name)
-                elif expected_default_value[parameter_name] and (
+                    break
+                function_score[func.identifier] += 1
+
+                if expected_default_value[parameter_name] and (
                     parameters[parameter_name].init_value
                     != expected_default_value[parameter_name]
                 ):
@@ -200,12 +206,6 @@ class VerificationComponentInterface:
                 function_score[func.identifier] += 1
 
             if function_score[func.identifier] == len(messages):
-                for parameter_name in parameters_missing_default_value:
-                    LOGGER.warning(
-                        "%s parameter in %s is missing a default value",
-                        parameter_name,
-                        func.identifier,
-                    )
                 return func
 
         log_error_message(function_score, messages)
@@ -276,7 +276,7 @@ class VerificationComponentInterface:
                         "actor",
                         "logger",
                         "checker",
-                        "fail_on_unexpected_msg_type",
+                        "unexpected_msg_type_policy",
                     ]:
                         continue
                     constant_declarations += "    constant %s : %s := ;\n" % (
@@ -357,7 +357,7 @@ end architecture;
             actor=None,
             logger=None,
             checker=None,
-            fail_on_unexpected_msg_type=True,
+            unexpected_msg_type_policy="fail",
         ):
 
             handle_assignment = "        %s := %s(\n" % (
@@ -370,7 +370,7 @@ end architecture;
                         "actor",
                         "logger",
                         "checker",
-                        "fail_on_unexpected_msg_type",
+                        "unexpected_msg_type_policy",
                     ]:
                         continue
                     handle_assignment += "          %s => %s,\n" % (
@@ -381,7 +381,7 @@ end architecture;
                 actor=actor,
                 logger=logger,
                 checker=checker,
-                fail_on_unexpected_msg_type=fail_on_unexpected_msg_type,
+                unexpected_msg_type_policy=unexpected_msg_type_policy,
             ).items():
                 if actual:
                     handle_assignment += "          %s => %s,\n" % (formal, actual)
@@ -421,14 +421,14 @@ ${handle1}
         check(get_actor(std_cfg1) = actor1, "Failed to configure actor with ${vc_constructor_name}");
         check(get_logger(std_cfg1) = logger1, "Failed to configure logger with ${vc_constructor_name}");
         check(get_checker(std_cfg1) = checker1, "Failed to configure checker with ${vc_constructor_name}");
-        check(fail_on_unexpected_msg_type(std_cfg1),
-        "Failed to configure fail_on_unexpected_msg_type = true with ${vc_constructor_name}");
+        check(unexpected_msg_type_policy(std_cfg1) = fail,
+        "Failed to configure unexpected_msg_type_policy = fail with ${vc_constructor_name}");
 
 ${handle2}
         std_cfg2 := get_std_cfg(handle2);
 
-        check(fail_on_unexpected_msg_type(std_cfg2) = false,
-        "Failed to configure fail_on_unexpected_msg_type = false with ${vc_constructor_name}");
+        check(unexpected_msg_type_policy(std_cfg2) = ignore,
+        "Failed to configure unexpected_msg_type_policy = ignore with ${vc_constructor_name}");
 
       elsif run("Test handle independence") then
 ${handle1}
@@ -442,32 +442,47 @@ ${handle3}
         "Logger shared between handles created by ${vc_constructor_name}");
         check(get_checker(std_cfg1) /= get_checker(std_cfg2),
         "Checker shared between handles created by ${vc_constructor_name}");
-        check(fail_on_unexpected_msg_type(std_cfg1) /= fail_on_unexpected_msg_type(std_cfg2),
-        "fail_on_unexpected_msg_type shared between handles created by ${vc_constructor_name}");
+        check(unexpected_msg_type_policy(std_cfg1) /= unexpected_msg_type_policy(std_cfg2),
+        "unexpected_msg_type_policy shared between handles created by ${vc_constructor_name}");
 
       elsif run("Test default logger") then
 ${handle4}
         std_cfg1 := get_std_cfg(handle1);
-        check(get_logger(std_cfg1) /= null_logger, "No valid default logger created by ${vc_constructor_name}");
+        check(get_logger(std_cfg1) /= null_logger,
+          "No valid default logger (null_logger) created by ${vc_constructor_name}");
+        check(get_logger(std_cfg1) /= default_logger,
+          "No valid default logger (default_logger) created by ${vc_constructor_name}");
 
 ${handle5}
         std_cfg2 := get_std_cfg(handle2);
-        check(get_logger(std_cfg2) /= null_logger, "No valid default logger created by ${vc_constructor_name}");
+        check(get_logger(std_cfg2) /= null_logger,
+          "No valid default logger (null_logger) created by ${vc_constructor_name}");
+        check(get_logger(std_cfg2) /= default_logger,
+          "No valid default logger (default_logger) created by ${vc_constructor_name}");
 
       elsif run("Test default checker") then
 ${handle6}
         std_cfg1 := get_std_cfg(handle1);
-        check(get_checker(std_cfg1) /= null_checker, "No valid default checker created by ${vc_constructor_name}");
+        check(get_checker(std_cfg1) /= null_checker,
+          "No valid default checker (null_checker) created by ${vc_constructor_name}");
+        check(get_checker(std_cfg1) /= default_checker,
+          "No valid default checker (default_checker) created by ${vc_constructor_name}");
 
 ${handle7}
         std_cfg2 := get_std_cfg(handle2);
-        check(get_checker(std_cfg2) /= null_checker, "No valid default checker created by ${vc_constructor_name}");
+        check(get_checker(std_cfg2) /= null_checker,
+          "No valid default checker (null_checker) created by ${vc_constructor_name}");
+        check(get_checker(std_cfg2) /= default_checker,
+          "No valid default checker (default_checker) created by ${vc_constructor_name}");
 
 ${handle8}
         std_cfg3 := get_std_cfg(handle3);
-        check(get_checker(std_cfg3) /= null_checker, "No valid default checker created by ${vc_constructor_name}");
+        check(get_checker(std_cfg3) /= null_checker,
+          "No valid default checker (null_checker) created by ${vc_constructor_name}");
+        check(get_checker(std_cfg3) /= default_checker,
+          "No valid default checker (default_checker) created by ${vc_constructor_name}");
         check(get_logger(get_checker(std_cfg3)) = logger3,
-        "Default checker not based on logger provided to ${vc_constructor_name}");
+          "Default checker not based on logger provided to ${vc_constructor_name}");
 
       end if;
     end loop;
@@ -486,49 +501,49 @@ end architecture;
                 actor="actor1",
                 logger="logger1",
                 checker="checker1",
-                fail_on_unexpected_msg_type="true",
+                unexpected_msg_type_policy="fail",
             ),
             handle2=create_handle_assignment(
                 "handle2",
                 actor="actor2",
                 logger="logger2",
                 checker="checker2",
-                fail_on_unexpected_msg_type="false",
+                unexpected_msg_type_policy="ignore",
             ),
             handle3=create_handle_assignment(
                 "handle2",
                 actor="actor2",
                 logger="logger2",
                 checker="checker2",
-                fail_on_unexpected_msg_type="false",
+                unexpected_msg_type_policy="ignore",
             ),
             handle4=create_handle_assignment(
                 "handle1",
                 actor="actor1",
                 checker="checker1",
-                fail_on_unexpected_msg_type="true",
+                unexpected_msg_type_policy="fail",
             ),
             handle5=create_handle_assignment(
                 "handle2",
                 actor="actor2",
                 logger="null_logger",
                 checker="checker2",
-                fail_on_unexpected_msg_type="true",
+                unexpected_msg_type_policy="fail",
             ),
             handle6=create_handle_assignment(
-                "handle1", actor="actor1", fail_on_unexpected_msg_type="true",
+                "handle1", actor="actor1", unexpected_msg_type_policy="fail",
             ),
             handle7=create_handle_assignment(
                 "handle2",
                 actor="actor2",
                 checker="null_checker",
-                fail_on_unexpected_msg_type="true",
+                unexpected_msg_type_policy="fail",
             ),
             handle8=create_handle_assignment(
                 "handle3",
                 actor="actor3",
                 logger="logger3",
-                fail_on_unexpected_msg_type="true",
+                unexpected_msg_type_policy="fail",
             ),
         )
 

@@ -18,6 +18,7 @@ use work.com_types_pkg.all;
 use work.logger_pkg.all;
 use work.check_pkg.all;
 use work.sync_pkg.all;
+use work.vc_pkg.all;
 use work.avalon_pkg.all;
 
 library osvvm;
@@ -126,8 +127,8 @@ begin
         end loop;
         handle_sync_message(net, msg_type, request_msg);
 
-      elsif fail_on_unexpected_msg_type(avalon_master_handle.p_bus_handle) then
-        unexpected_msg_type(msg_type, get_checker(avalon_master_handle.p_bus_handle));
+      else
+        unexpected_msg_type(msg_type, get_std_cfg(avalon_master_handle.p_bus_handle));
       end if;
     end loop;
   end process;

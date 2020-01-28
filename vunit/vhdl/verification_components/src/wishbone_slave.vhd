@@ -60,8 +60,8 @@ begin
         wait until rising_edge(clk);
       end loop;
       handle_sync_message(net, msg_type, request_msg);
-    elsif fail_on_unexpected_msg_type(wishbone_slave.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(wishbone_slave.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, wishbone_slave.p_std_cfg);
     end if;
   end process;
 
@@ -120,8 +120,8 @@ begin
       wait until rising_edge(clk);
       ack <= '0';
 
-    elsif fail_on_unexpected_msg_type(wishbone_slave.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(wishbone_slave.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, wishbone_slave.p_std_cfg);
     end if;
   end process;
 

@@ -19,6 +19,7 @@ use vunit_lib.com_types_pkg.all;
 use vunit_lib.logger_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 
 entity tb_avalon_master_compliance is
   generic(

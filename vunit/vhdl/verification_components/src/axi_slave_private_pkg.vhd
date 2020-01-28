@@ -50,7 +50,8 @@ package axi_slave_private_pkg is
     impure function get_actor return actor_t;
     impure function get_logger return logger_t;
     impure function get_checker return checker_t;
-    impure function fail_on_unexpected_msg_type return boolean;
+    impure function unexpected_msg_type_policy return unexpected_msg_type_policy_t;
+    impure function get_std_cfg return std_cfg_t;
 
     procedure set_address_fifo_depth(depth : positive);
     procedure set_write_response_fifo_depth(depth : positive);
@@ -179,9 +180,14 @@ package body axi_slave_private_pkg is
       return get_checker(p_axi_slave.p_std_cfg);
     end;
 
-    impure function fail_on_unexpected_msg_type return boolean is
+    impure function unexpected_msg_type_policy return unexpected_msg_type_policy_t is
     begin
-      return fail_on_unexpected_msg_type(p_axi_slave.p_std_cfg);
+      return unexpected_msg_type_policy(p_axi_slave.p_std_cfg);
+    end;
+
+    impure function get_std_cfg return std_cfg_t is
+    begin
+      return p_axi_slave.p_std_cfg;
     end;
 
     procedure set_address_fifo_depth(depth : positive) is
@@ -569,8 +575,8 @@ package body axi_slave_private_pkg is
       elsif msg_type = axi_slave_enable_well_behaved_check_msg then
         self.enable_well_behaved_check;
         acknowledge(net, request_msg, true);
-      elsif self.fail_on_unexpected_msg_type then
-        unexpected_msg_type(msg_type, self.get_checker);
+      else
+        unexpected_msg_type(msg_type, self.get_std_cfg);
       end if;
 
       delete(request_msg);

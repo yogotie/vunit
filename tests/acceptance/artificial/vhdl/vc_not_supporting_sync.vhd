@@ -28,9 +28,7 @@ begin
 
     msg_type := message_type(msg);
 
-    if fail_on_unexpected_msg_type(vc_h.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(vc_h.p_std_cfg));
-    end if;
+    unexpected_msg_type(msg_type, vc_h.p_std_cfg);
   end process;
 end architecture;
 

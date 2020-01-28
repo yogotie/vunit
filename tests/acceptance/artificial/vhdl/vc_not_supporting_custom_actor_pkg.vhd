@@ -25,7 +25,7 @@ package vc_not_supporting_custom_actor_pkg is
     logger : logger_t := vc_not_supporting_custom_actor_logger;
     actor : actor_t := null_actor;
     checker : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean := true
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return vc_not_supporting_custom_actor_handle_t;
 
   procedure transaction(
@@ -41,13 +41,13 @@ end package;
 
 package body vc_not_supporting_custom_actor_pkg is
   impure function new_vc_not_supporting_custom_actor(
-    logger                      : logger_t  := vc_not_supporting_custom_actor_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true
+    logger                     : logger_t                     := vc_not_supporting_custom_actor_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return vc_not_supporting_custom_actor_handle_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      vc_not_supporting_custom_actor_logger, vc_not_supporting_custom_actor_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      vc_not_supporting_custom_actor_logger, vc_not_supporting_custom_actor_checker, actor, logger, checker, unexpected_msg_type_policy
     );
 
   begin

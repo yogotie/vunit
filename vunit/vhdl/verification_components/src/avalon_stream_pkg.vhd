@@ -33,19 +33,19 @@ package avalon_stream_pkg is
   constant avalon_stream_logger : logger_t := get_logger("vunit_lib:avalon_stream_pkg");
   constant avalon_stream_checker : checker_t := new_checker(avalon_stream_logger);
 
-  impure function new_avalon_source(data_length                 : natural;
-                                    valid_high_probability      : real      := 1.0;
-                                    logger                      : logger_t  := avalon_stream_logger;
-                                    actor                       : actor_t   := null_actor;
-                                    checker                     : checker_t := null_checker;
-                                    fail_on_unexpected_msg_type : boolean   := true
+  impure function new_avalon_source(data_length                : natural;
+                                    valid_high_probability     : real                         := 1.0;
+                                    logger                     : logger_t                     := avalon_stream_logger;
+                                    actor                      : actor_t                      := null_actor;
+                                    checker                    : checker_t                    := null_checker;
+                                    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
                                    ) return avalon_source_t;
-  impure function new_avalon_sink(data_length                 : natural;
-                                  ready_high_probability      : real      := 1.0;
-                                  logger                      : logger_t  := avalon_stream_logger;
-                                  actor                       : actor_t   := null_actor;
-                                  checker                     : checker_t := null_checker;
-                                  fail_on_unexpected_msg_type : boolean   := true) return avalon_sink_t;
+  impure function new_avalon_sink(data_length                : natural;
+                                  ready_high_probability     : real                         := 1.0;
+                                  logger                     : logger_t                     := avalon_stream_logger;
+                                  actor                      : actor_t                      := null_actor;
+                                  checker                    : checker_t                    := null_checker;
+                                  unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail) return avalon_sink_t;
   impure function data_length(source : avalon_source_t) return natural;
   impure function data_length(source : avalon_sink_t) return natural;
   impure function as_sync(source : avalon_source_t) return sync_handle_t;
@@ -97,15 +97,15 @@ end package;
 
 package body avalon_stream_pkg is
 
-  impure function new_avalon_source(data_length                 : natural;
-                                    valid_high_probability      : real      := 1.0;
-                                    logger                      : logger_t  := avalon_stream_logger;
-                                    actor                       : actor_t   := null_actor;
-                                    checker                     : checker_t := null_checker;
-                                    fail_on_unexpected_msg_type : boolean   := true
+  impure function new_avalon_source(data_length                : natural;
+                                    valid_high_probability     : real                         := 1.0;
+                                    logger                     : logger_t                     := avalon_stream_logger;
+                                    actor                      : actor_t                      := null_actor;
+                                    checker                    : checker_t                    := null_checker;
+                                    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
                                    ) return avalon_source_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      avalon_stream_logger, avalon_stream_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      avalon_stream_logger, avalon_stream_checker, actor, logger, checker, unexpected_msg_type_policy
     );
   begin
     return (p_std_cfg                => p_std_cfg,
@@ -113,14 +113,14 @@ package body avalon_stream_pkg is
             p_data_length            => data_length);
   end;
 
-  impure function new_avalon_sink(data_length                 : natural;
-                                  ready_high_probability      : real      := 1.0;
-                                  logger                      : logger_t  := avalon_stream_logger;
-                                  actor                       : actor_t   := null_actor;
-                                  checker                     : checker_t := null_checker;
-                                  fail_on_unexpected_msg_type : boolean   := true) return avalon_sink_t is
+  impure function new_avalon_sink(data_length                : natural;
+                                  ready_high_probability     : real                         := 1.0;
+                                  logger                     : logger_t                     := avalon_stream_logger;
+                                  actor                      : actor_t                      := null_actor;
+                                  checker                    : checker_t                    := null_checker;
+                                  unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail) return avalon_sink_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      avalon_stream_logger, avalon_stream_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      avalon_stream_logger, avalon_stream_checker, actor, logger, checker, unexpected_msg_type_policy
     );
   begin
     return (p_std_cfg                => p_std_cfg,

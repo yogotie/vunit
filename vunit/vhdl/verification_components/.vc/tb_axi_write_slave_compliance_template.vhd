@@ -18,6 +18,7 @@ use vunit_lib.integer_vector_ptr_pool_pkg.all;
 use vunit_lib.memory_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 
 entity tb_axi_write_slave_compliance is
   generic(

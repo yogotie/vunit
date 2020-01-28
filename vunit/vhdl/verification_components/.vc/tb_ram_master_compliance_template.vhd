@@ -14,6 +14,7 @@ use vunit_lib.bus_master_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.ram_master_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 
 entity tb_ram_master_compliance is
   generic(

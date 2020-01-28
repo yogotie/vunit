@@ -49,8 +49,8 @@ begin
       end loop;
 
       handle_sync_message(net, msg_type, request_msg);
-    elsif fail_on_unexpected_msg_type(signal_checker.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(signal_checker.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, signal_checker.p_std_cfg);
     end if;
 
     delete(request_msg);

@@ -80,8 +80,8 @@ begin
         ready <= '0';
       end loop;
 
-    elsif fail_on_unexpected_msg_type(sink.p_std_cfg) then
-        unexpected_msg_type(msg_type, get_checker(sink.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, sink.p_std_cfg);
     end if;
 
   end process;

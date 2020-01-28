@@ -116,56 +116,56 @@ package axi_stream_pkg is
   constant axi_stream_checker : checker_t := new_checker(axi_stream_logger);
 
   impure function new_axi_stream_master(
-    data_length                 : natural;
-    id_length                   : natural                       := 0;
-    dest_length                 : natural                       := 0;
-    user_length                 : natural                       := 0;
-    drive_invalid               : boolean                       := true;
-    drive_invalid_val           : std_logic                     := 'X';
-    drive_invalid_val_user      : std_logic                     := '0';
-    logger                      : logger_t                      := axi_stream_logger;
-    actor                       : actor_t                       := null_actor;
-    checker                     : checker_t                     := null_checker;
-    fail_on_unexpected_msg_type : boolean                       := true;
-    monitor                     : axi_stream_monitor_t          := null_axi_stream_monitor;
-    protocol_checker            : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
+    data_length                : natural;
+    id_length                  : natural                       := 0;
+    dest_length                : natural                       := 0;
+    user_length                : natural                       := 0;
+    drive_invalid              : boolean                       := true;
+    drive_invalid_val          : std_logic                     := 'X';
+    drive_invalid_val_user     : std_logic                     := '0';
+    logger                     : logger_t                      := axi_stream_logger;
+    actor                      : actor_t                       := null_actor;
+    checker                    : checker_t                     := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t  := fail;
+    monitor                    : axi_stream_monitor_t          := null_axi_stream_monitor;
+    protocol_checker           : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
   ) return axi_stream_master_t;
 
   impure function new_axi_stream_slave(
-    data_length                 : natural;
-    id_length                   : natural                       := 0;
-    dest_length                 : natural                       := 0;
-    user_length                 : natural                       := 0;
-    logger                      : logger_t                      := axi_stream_logger;
-    actor                       : actor_t                       := null_actor;
-    checker                     : checker_t                     := null_checker;
-    fail_on_unexpected_msg_type : boolean                       := true;
-    monitor                     : axi_stream_monitor_t          := null_axi_stream_monitor;
-    protocol_checker            : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
+    data_length                : natural;
+    id_length                  : natural                       := 0;
+    dest_length                : natural                       := 0;
+    user_length                : natural                       := 0;
+    logger                     : logger_t                      := axi_stream_logger;
+    actor                      : actor_t                       := null_actor;
+    checker                    : checker_t                     := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t  := fail;
+    monitor                    : axi_stream_monitor_t          := null_axi_stream_monitor;
+    protocol_checker           : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
   ) return axi_stream_slave_t;
 
   impure function new_axi_stream_monitor(
-    data_length                 : natural;
-    id_length                   : natural                       := 0;
-    dest_length                 : natural                       := 0;
-    user_length                 : natural                       := 0;
-    logger                      : logger_t                      := axi_stream_logger;
-    actor                       : actor_t;
-    checker                     : checker_t                     := null_checker;
-    fail_on_unexpected_msg_type : boolean                       := true;
-    protocol_checker            : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
+    data_length                : natural;
+    id_length                  : natural                       := 0;
+    dest_length                : natural                       := 0;
+    user_length                : natural                       := 0;
+    logger                     : logger_t                      := axi_stream_logger;
+    actor                      : actor_t                       := null_actor;
+    checker                    : checker_t                     := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t  := fail;
+    protocol_checker           : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
   ) return axi_stream_monitor_t;
 
   impure function new_axi_stream_protocol_checker(
-    data_length                 : natural;
-    id_length                   : natural   := 0;
-    dest_length                 : natural   := 0;
-    user_length                 : natural   := 0;
-    logger                      : logger_t  := axi_stream_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true;
-    max_waits                   : natural   := 16
+    data_length                : natural;
+    id_length                  : natural                      := 0;
+    dest_length                : natural                      := 0;
+    user_length                : natural                      := 0;
+    logger                     : logger_t                     := axi_stream_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail;
+    max_waits                  : natural                      := 16
   ) return axi_stream_protocol_checker_t;
 
   impure function data_length(master : axi_stream_master_t) return natural;
@@ -355,22 +355,22 @@ package body axi_stream_pkg is
   end;
 
   impure function new_axi_stream_master(
-    data_length                 : natural;
-    id_length                   : natural                       := 0;
-    dest_length                 : natural                       := 0;
-    user_length                 : natural                       := 0;
-    drive_invalid               : boolean                       := true;
-    drive_invalid_val           : std_logic                     := 'X';
-    drive_invalid_val_user      : std_logic                     := '0';
-    logger                      : logger_t                      := axi_stream_logger;
-    actor                       : actor_t                       := null_actor;
-    checker                     : checker_t                     := null_checker;
-    fail_on_unexpected_msg_type : boolean                       := true;
-    monitor                     : axi_stream_monitor_t          := null_axi_stream_monitor;
-    protocol_checker            : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
+    data_length                : natural;
+    id_length                  : natural                       := 0;
+    dest_length                : natural                       := 0;
+    user_length                : natural                       := 0;
+    drive_invalid              : boolean                       := true;
+    drive_invalid_val          : std_logic                     := 'X';
+    drive_invalid_val_user     : std_logic                     := '0';
+    logger                     : logger_t                      := axi_stream_logger;
+    actor                      : actor_t                       := null_actor;
+    checker                    : checker_t                     := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t  := fail;
+    monitor                    : axi_stream_monitor_t          := null_axi_stream_monitor;
+    protocol_checker           : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
   ) return axi_stream_master_t is
     constant p_std_cfg       : std_cfg_t := create_std_cfg(
-      axi_stream_logger, axi_stream_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      axi_stream_logger, axi_stream_checker, actor, logger, checker, unexpected_msg_type_policy
     );
     variable p_monitor          : axi_stream_monitor_t;
     variable p_protocol_checker : axi_stream_protocol_checker_t;
@@ -392,19 +392,19 @@ package body axi_stream_pkg is
   end;
 
   impure function new_axi_stream_slave(
-    data_length                 : natural;
-    id_length                   : natural                       := 0;
-    dest_length                 : natural                       := 0;
-    user_length                 : natural                       := 0;
-    logger                      : logger_t                      := axi_stream_logger;
-    actor                       : actor_t                       := null_actor;
-    checker                     : checker_t                     := null_checker;
-    fail_on_unexpected_msg_type : boolean                       := true;
-    monitor                     : axi_stream_monitor_t          := null_axi_stream_monitor;
-    protocol_checker            : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
+    data_length                : natural;
+    id_length                  : natural                       := 0;
+    dest_length                : natural                       := 0;
+    user_length                : natural                       := 0;
+    logger                     : logger_t                      := axi_stream_logger;
+    actor                      : actor_t                       := null_actor;
+    checker                    : checker_t                     := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t  := fail;
+    monitor                    : axi_stream_monitor_t          := null_axi_stream_monitor;
+    protocol_checker           : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
   ) return axi_stream_slave_t is
     constant p_std_cfg       : std_cfg_t := create_std_cfg(
-      axi_stream_logger, axi_stream_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      axi_stream_logger, axi_stream_checker, actor, logger, checker, unexpected_msg_type_policy
     );
     variable p_monitor          : axi_stream_monitor_t;
     variable p_protocol_checker : axi_stream_protocol_checker_t;
@@ -423,21 +423,21 @@ package body axi_stream_pkg is
   end;
 
   impure function new_axi_stream_monitor(
-    data_length                 : natural;
-    id_length                   : natural                       := 0;
-    dest_length                 : natural                       := 0;
-    user_length                 : natural                       := 0;
-    logger                      : logger_t                      := axi_stream_logger;
-    actor                       : actor_t;
-    checker                     : checker_t                     := null_checker;
-    fail_on_unexpected_msg_type : boolean                       := true;
-    protocol_checker            : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
+    data_length                : natural;
+    id_length                  : natural                       := 0;
+    dest_length                : natural                       := 0;
+    user_length                : natural                       := 0;
+    logger                     : logger_t                      := axi_stream_logger;
+    actor                      : actor_t                       := null_actor;
+    checker                    : checker_t                     := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t  := fail;
+    protocol_checker           : axi_stream_protocol_checker_t := null_axi_stream_protocol_checker
   ) return axi_stream_monitor_t is
     constant p_protocol_checker : axi_stream_protocol_checker_t := get_valid_protocol_checker(
       data_length, id_length, dest_length, user_length, logger, actor, checker, protocol_checker, "monitor"
     );
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      axi_stream_logger, axi_stream_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      axi_stream_logger, axi_stream_checker, actor, logger, checker, unexpected_msg_type_policy
     );
   begin
     return (
@@ -451,18 +451,18 @@ package body axi_stream_pkg is
   end;
 
   impure function new_axi_stream_protocol_checker(
-    data_length                 : natural;
-    id_length                   : natural   := 0;
-    dest_length                 : natural   := 0;
-    user_length                 : natural   := 0;
-    logger                      : logger_t  := axi_stream_logger;
-    actor                       : actor_t   := null_actor;
-    checker                     : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean   := true;
-    max_waits                   : natural   := 16
+    data_length                : natural;
+    id_length                  : natural                      := 0;
+    dest_length                : natural                      := 0;
+    user_length                : natural                      := 0;
+    logger                     : logger_t                     := axi_stream_logger;
+    actor                      : actor_t                      := null_actor;
+    checker                    : checker_t                    := null_checker;
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail;
+    max_waits                  : natural                      := 16
   ) return axi_stream_protocol_checker_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      axi_stream_logger, axi_stream_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      axi_stream_logger, axi_stream_checker, actor, logger, checker, unexpected_msg_type_policy
     );
   begin
     return (

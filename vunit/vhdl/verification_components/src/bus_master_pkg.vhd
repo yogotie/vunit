@@ -21,13 +21,10 @@ package bus_master_pkg is
   -- Handle to VC instance with bus master VCI
   type bus_master_t is record
     -- These fields are private, do not use directly
-    p_actor : actor_t;
+    p_std_cfg : std_cfg_t;
     p_data_length : natural;
     p_address_length : natural;
     p_byte_length : natural;
-    p_logger : logger_t;
-    p_checker : checker_t;
-    p_fail_on_unexpected_msg_type : boolean;
   end record;
 
   -- Reference to non-blocking bus command
@@ -44,21 +41,21 @@ package bus_master_pkg is
                           logger : logger_t := bus_logger;
                           actor : actor_t := null_actor;
                           checker : checker_t := null_checker;
-                          fail_on_unexpected_msg_type : boolean := true) return bus_master_t;
+                          unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail) return bus_master_t;
 
-  function get_std_cfg(master : bus_master_t) return std_cfg_t;
+  impure function get_std_cfg(master : bus_master_t) return std_cfg_t;
 
   -- Return the actor used by the bus master
-  function get_actor(bus_handle : bus_master_t) return actor_t;
+  impure function get_actor(bus_handle : bus_master_t) return actor_t;
 
   -- Return the logger used by the bus master
-  function get_logger(bus_handle : bus_master_t) return logger_t;
+  impure function get_logger(bus_handle : bus_master_t) return logger_t;
 
   -- Return the checker used by the bus master
-  function get_checker(bus_handle : bus_master_t) return checker_t;
+  impure function get_checker(bus_handle : bus_master_t) return checker_t;
 
   -- Return true if the bus VC fails on unexpected messages to the actor
-  function fail_on_unexpected_msg_type(bus_handle : bus_master_t) return boolean;
+  impure function unexpected_msg_type_policy(bus_handle : bus_master_t) return unexpected_msg_type_policy_t;
 
   -- Return the length of the data on this bus
   impure function data_length(bus_handle : bus_master_t) return natural;

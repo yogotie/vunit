@@ -47,23 +47,23 @@ package axi_slave_pkg is
                                 logger : logger_t := axi_slave_logger;
                                 actor : actor_t := null_actor;
                                 checker : checker_t := null_checker;
-                                fail_on_unexpected_msg_type : boolean := true) return axi_slave_t;
+                                unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail) return axi_slave_t;
 
   function get_std_cfg(axi_slave : axi_slave_t) return std_cfg_t;
 
   impure function as_sync(axi_slave : axi_slave_t) return sync_handle_t;
 
   -- Return the actor used by the axi_slave
-  function get_actor(axi_slave : axi_slave_t) return actor_t;
+  impure function get_actor(axi_slave : axi_slave_t) return actor_t;
 
   -- Return the logger used by the axi_slave
-  function get_logger(axi_slave : axi_slave_t) return logger_t;
+  impure function get_logger(axi_slave : axi_slave_t) return logger_t;
 
   -- Return the checker used by the axi_slave
-  function get_checker(axi_slave : axi_slave_t) return checker_t;
+  impure function get_checker(axi_slave : axi_slave_t) return checker_t;
 
-  -- Return true if the bus VC fails on unexpected messages to the actor
-  function fail_on_unexpected_msg_type(axi_slave : axi_slave_t) return boolean;
+  -- Return policy for handling unexpected messages to the actor
+  impure function unexpected_msg_type_policy(axi_slave : axi_slave_t) return unexpected_msg_type_policy_t;
 
   -- Set the maximum number address channel tokens that can be queued
   procedure set_address_fifo_depth(signal net : inout network_t;
@@ -167,9 +167,9 @@ package body axi_slave_pkg is
                                 logger : logger_t := axi_slave_logger;
                                 actor : actor_t := null_actor;
                                 checker : checker_t := null_checker;
-                                fail_on_unexpected_msg_type : boolean := true) return axi_slave_t is
+                                unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail) return axi_slave_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      axi_slave_logger, axi_slave_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      axi_slave_logger, axi_slave_checker, actor, logger, checker, unexpected_msg_type_policy
     );
   begin
     return (p_std_cfg => p_std_cfg,
@@ -194,24 +194,24 @@ package body axi_slave_pkg is
     return get_actor(axi_slave.p_std_cfg);
   end;
 
-  function get_actor(axi_slave : axi_slave_t) return actor_t is
+  impure function get_actor(axi_slave : axi_slave_t) return actor_t is
   begin
     return get_actor(axi_slave.p_std_cfg);
   end;
 
-  function get_logger(axi_slave : axi_slave_t) return logger_t is
+  impure function get_logger(axi_slave : axi_slave_t) return logger_t is
   begin
     return get_logger(axi_slave.p_std_cfg);
   end;
 
-  function get_checker(axi_slave : axi_slave_t) return checker_t is
+  impure function get_checker(axi_slave : axi_slave_t) return checker_t is
   begin
     return get_checker(axi_slave.p_std_cfg);
   end;
 
-  function fail_on_unexpected_msg_type(axi_slave : axi_slave_t) return boolean is
+  impure function unexpected_msg_type_policy(axi_slave : axi_slave_t) return unexpected_msg_type_policy_t is
   begin
-    return fail_on_unexpected_msg_type(axi_slave.p_std_cfg);
+    return unexpected_msg_type_policy(axi_slave.p_std_cfg);
   end;
 
   procedure set_address_fifo_depth(signal net : inout network_t;

@@ -23,7 +23,7 @@ package vc_pkg_with_template is
     logger : logger_t := vc_logger;
     actor : actor_t := null_actor;
     checker : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean := true
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return vc_handle_t;
 
   impure function as_sync(
@@ -38,10 +38,10 @@ package body vc_pkg_with_template is
     logger : logger_t := vc_logger;
     actor : actor_t := null_actor;
     checker : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean := true
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return vc_handle_t is
     constant p_std_cfg : std_cfg_t := create_std_cfg(
-      vc_logger, vc_checker, actor, logger, checker, fail_on_unexpected_msg_type
+      vc_logger, vc_checker, actor, logger, checker, unexpected_msg_type_policy
     );
 
   begin

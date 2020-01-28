@@ -13,6 +13,7 @@ use ieee.std_logic_1164.all;
 use std.textio.all;
 use vunit_lib.axi_stream_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 
 entity tb_axi_stream_protocol_checker_compliance is
   generic(

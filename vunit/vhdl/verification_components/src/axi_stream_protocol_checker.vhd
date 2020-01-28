@@ -98,8 +98,8 @@ begin
     if msg_type = wait_until_idle_msg then
       wait_until_all_streams_have_completed;
       handle_wait_until_idle(net, msg_type, request_msg);
-    elsif fail_on_unexpected_msg_type(protocol_checker.p_std_cfg) then
-      unexpected_msg_type(msg_type, get_checker(protocol_checker.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, protocol_checker.p_std_cfg);
     end if;
   end process;
 

@@ -58,7 +58,7 @@ package vc_pkg is
     logger : logger_t := default_logger;
     actor : actor_t := null_actor;
     checker : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean := true
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return vc_handle_t;
 end package;
 """
@@ -266,7 +266,7 @@ end package;
             logger=("logger_t", "default_logger"),
             actor=("actor_t", "null_actor"),
             checker=("checker_t", "null_checker"),
-            fail_on_unexpected_msg_type=("boolean", "true"),
+            unexpected_msg_type_policy=("unexpected_msg_type_policy_t", "fail"),
         )
         reasons_for_failure = [
             "missing_parameter",
@@ -277,7 +277,7 @@ end package;
         for iteration, (invalid_parameter, invalid_reason) in enumerate(
             product(parameters, reasons_for_failure)
         ):
-            if (invalid_parameter in ["fail_on_unexpected_msg_type", "logger"]) and (
+            if (invalid_parameter in ["unexpected_msg_type_policy", "logger"]) and (
                 invalid_reason == "invalid_default_value"
             ):
                 continue
@@ -363,7 +363,7 @@ package other_vc_pkg is
     logger : logger_t := default_logger;
     actor : actor_t := null_actor;
     checker : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean := true
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return vc_handle_t;
 end package;
 """
@@ -395,7 +395,7 @@ package other_vc_pkg is
     logger : logger_t := default_logger;
     actor : actor_t := null_actor;
     checker : checker_t := null_checker;
-    fail_on_unexpected_msg_type : boolean := true
+    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail
   ) return vc_handle_t;
 end package;
 """
@@ -415,12 +415,12 @@ end package;
             "Failed to find %s record", "vc_handle_t",
         )
 
-    def test_warning_on_missing_default_value(self):
+    def test_error_on_missing_default_value(self):
         parameters = dict(
             logger=("logger_t", "default_logger"),
             actor=("actor_t", "null_actor"),
             checker=("checker_t", "null_checker"),
-            fail_on_unexpected_msg_type=("boolean", "true"),
+            unexpected_msg_type_policy=("unexpected_msg_type_policy_t", "fail"),
         )
 
         for iteration, parameter_wo_init_value in enumerate(parameters):
@@ -461,15 +461,17 @@ end package;
                 )
             )
 
-            with mock.patch.object(LOGGER, "warning") as warning_mock:
-                vci = VerificationComponentInterface.find(
-                    self.vc_lib, "other_vc_%d_pkg" % iteration, "vc_handle_t"
+            with mock.patch.object(LOGGER, "error") as error_mock:
+                self.assertRaises(
+                    SystemExit,
+                    VerificationComponentInterface.find,
+                    self.vc_lib,
+                    "other_vc_%d_pkg" % iteration,
+                    "vc_handle_t",
                 )
-                VerificationComponent.find(self.vc_lib, "vc", vci)
-                warning_mock.assert_called_once_with(
-                    "%s parameter in %s is missing a default value",
-                    parameter_wo_init_value,
-                    "new_vc",
+                error_mock.assert_called_once_with(
+                    "Found constructor function new_vc for vc_handle_t but %s is lacking a default value"
+                    % parameter_wo_init_value
                 )
 
     def test_create_vhdl_testbench_template_references(self):

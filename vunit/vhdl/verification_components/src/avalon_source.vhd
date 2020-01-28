@@ -72,8 +72,8 @@ begin
       valid <= '0';
       sop   <= '0';
       eop   <= '0';
-    elsif fail_on_unexpected_msg_type(source.p_std_cfg) then
-        unexpected_msg_type(msg_type, get_checker(source.p_std_cfg));
+    else
+      unexpected_msg_type(msg_type, source.p_std_cfg);
     end if;
   end process;
 

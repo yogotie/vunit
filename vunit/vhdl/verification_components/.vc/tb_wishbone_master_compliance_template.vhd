@@ -18,6 +18,7 @@ use vunit_lib.log_levels_pkg.all;
 use vunit_lib.logger_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.sync_pkg.all;
+use vunit_lib.vc_pkg.all;
 use vunit_lib.wishbone_pkg.all;
 
 entity tb_wishbone_master_compliance is
