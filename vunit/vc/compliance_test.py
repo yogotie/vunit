@@ -11,8 +11,8 @@ Module for generating a compliance test for a VUnit verification component
 import argparse
 import sys
 import logging
-from os import makedirs
-from os.path import exists, join, dirname, isdir, abspath
+from pathlib import Path
+
 from vunit.vc.verification_component import VerificationComponent
 from vunit.vc.verification_component_interface import VerificationComponentInterface
 
@@ -26,21 +26,21 @@ def _create_vc_template(args):
         sys.exit(1)
 
     if not args.output_path:
-        output_dir = join(dirname(args.vc_path), ".vc")
-        if not exists(output_dir):
-            makedirs(output_dir)
+        output_dir = args.vc_path.parent / ".vc"
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True)
 
-        output_path = join(output_dir, "tb_%s_compliance_template.vhd" % vc_name)
-    elif isdir(args.output_path):
-        output_path = join(args.output_path, "tb_%s_compliance_template.vhd" % vc_name)
+        output_path = output_dir / ("tb_%s_compliance_template.vhd" % vc_name)
+    elif args.output_path.is_dir():
+        output_path = args.output_path / ("tb_%s_compliance_template.vhd" % vc_name)
     else:
         output_path = args.output_path
 
-    with open(output_path, "w") as output_file:
+    with output_path.open("w") as output_file:
         output_file.write(template_code)
         print(
             "Open %s and read the TODOs to complete the template."
-            % abspath(output_path)
+            % output_path.resolve()
         )
 
 
@@ -56,19 +56,16 @@ def _create_vci_template(args):
         sys.exit(1)
 
     if not args.output_path:
-        output_dir = join(dirname(args.vc_path), ".vc", vci_name)
-        if not exists(output_dir):
-            makedirs(output_dir, exist_ok=True)
+        output_dir = args.vc_path.parent / ".vc" / vci_name
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True)
 
-        output_path = join(
-            output_dir, "tb_%s_compliance_template.vhd" % args.vc_handle_t,
-        )
-    elif isdir(args.output_path):
-        output_dir = join(args.output_path, vci_name)
-        makedirs(output_dir, exist_ok=True)
-        output_path = join(
-            output_dir, "tb_%s_compliance_template.vhd" % args.vc_handle_t,
-        )
+        output_path = output_dir / ("tb_%s_compliance_template.vhd" % args.vc_handle_t)
+    elif args.output_path.is_dir():
+        output_dir = args.output_path / vci_name
+        if not output_dir.exists():
+            output_dir.exists(parents=True)
+        output_path = output_dir / ("tb_%s_compliance_template.vhd" % args.vc_handle_t)
     else:
         output_path = args.output_path
 
@@ -76,7 +73,7 @@ def _create_vci_template(args):
         output_file.write(template_code)
         print(
             "Open %s and read the TODOs to complete the template."
-            % abspath(output_path)
+            % output_path.resolve()
         )
 
 
@@ -96,10 +93,15 @@ def main():
         parser.add_argument(
             "-o",
             "--output-path",
+            type=Path,
             help="Path to the template  (default: ./compliance_test/tb_<VC name>_compliance_template.vhd)",
         )
-        parser.add_argument("vc_path", help="Path to file containing the VC entity")
-        parser.add_argument("vci_path", help="Path to file containing the VCI package")
+        parser.add_argument(
+            "vc_path", type=Path, help="Path to file containing the VC entity"
+        )
+        parser.add_argument(
+            "vci_path", type=Path, help="Path to file containing the VCI package"
+        )
 
     def create_vci_parser(subparsers):
         parser = subparsers.add_parser(
@@ -114,9 +116,12 @@ def main():
         parser.add_argument(
             "-o",
             "--output-path",
+            type=Path,
             help="Path to the template  (default: ./compliance_test/tb_<VCI name>_compliance_template.vhd)",
         )
-        parser.add_argument("vci_path", help="Path to file containing the VCI package")
+        parser.add_argument(
+            "vci_path", type=Path, help="Path to file containing the VCI package"
+        )
         parser.add_argument("vc_handle_t", help="VC handle type")
 
     parser = argparse.ArgumentParser(description="Compliance test tool")

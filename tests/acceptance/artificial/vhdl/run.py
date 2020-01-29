@@ -4,17 +4,17 @@
 #
 # Copyright (c) 2014-2020, Lars Asplund lars.anders.asplund@gmail.com
 
-from os.path import join, dirname
+from pathlib import Path
 from vunit import VUnit, VerificationComponentInterface, VerificationComponent
 
-root = dirname(__file__)
+root = Path(__file__).parent
 
 ui = VUnit.from_argv()
 ui.add_com()
 ui.add_verification_components()
 
 lib = ui.add_library("lib")
-lib.add_source_files(join(root, "*.vhd"))
+lib.add_source_files(str(root / "*.vhd"))
 
 
 def configure_tb_with_generic_config(ui):
@@ -36,7 +36,7 @@ def configure_tb_with_generic_config(ui):
     )
 
     def post_check(output_path):
-        with open(join(output_path, "post_check.txt"), "r") as fptr:
+        with (Path(output_path) / "post_check.txt").open("r") as fptr:
             return "Test 4 was here" in fptr.read()
 
     tests[4].add_config(
@@ -48,7 +48,7 @@ def configure_tb_with_generic_config(ui):
 
 def configure_tb_same_sim_all_pass(ui):
     def post_check(output_path):
-        with open(join(output_path, "post_check.txt"), "r") as fptr:
+        with (Path(output_path) / "post_check.txt").open("r") as fptr:
             return "Test 3 was here" in fptr.read()
 
     ent = ui.library("lib").entity("tb_same_sim_all_pass")
@@ -91,21 +91,21 @@ configure_tb_assert_stop_level(ui)
 lib.entity("tb_no_generic_override").set_generic("g_val", False)
 lib.entity("tb_ieee_warning").test("pass").set_sim_option("disable_ieee_warnings", True)
 lib.entity("tb_other_file_tests").scan_tests_from_file(
-    join(root, "other_file_tests.vhd")
+    str(root / "other_file_tests.vhd")
 )
 
 test_lib = ui.add_library("test_lib")
 
 vci = VerificationComponentInterface.find(lib, "vc_pkg", "vc_handle_t")
 VerificationComponent.find(lib, "vc", vci).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, str(root / "compliance_test"),
 )
 
 vci = VerificationComponentInterface.find(lib, "vc_pkg_with_template", "vc_handle_t")
 VerificationComponent.find(lib, "vc_with_template", vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_vc_with_template_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_vc_with_template_compliance_template.vhd",
 )
 
 
@@ -113,7 +113,7 @@ vci = VerificationComponentInterface.find(
     lib, "vc_not_supporting_sync_pkg", "vc_not_supporting_sync_handle_t"
 )
 VerificationComponent.find(lib, "vc_not_supporting_sync", vci).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 
 vci = VerificationComponentInterface.find(
@@ -122,7 +122,7 @@ vci = VerificationComponentInterface.find(
 VerificationComponent.find(
     lib, "vc_not_supporting_custom_actor", vci
 ).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 
 vci = VerificationComponentInterface.find(
@@ -133,7 +133,7 @@ vci = VerificationComponentInterface.find(
 VerificationComponent.find(
     lib, "vc_not_supporting_custom_logger", vci
 ).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 
 vci = VerificationComponentInterface.find(
@@ -144,7 +144,7 @@ vci = VerificationComponentInterface.find(
 VerificationComponent.find(
     lib, "vc_not_supporting_unexpected_msg_handling", vci
 ).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 
 ui.main()

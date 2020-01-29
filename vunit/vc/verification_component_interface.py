@@ -9,9 +9,8 @@
 import sys
 import re
 import logging
-from os import makedirs
-from os.path import exists, join
-from string import Template
+from pathlib import Path
+from vunit.vc.vci_template import TB_TEMPLATE_TEMPLATE, TB_EPILOGUE_TEMPLATE
 from vunit.vhdl_parser import (
     VHDLDesignFile,
     VHDLFunctionSpecification,
@@ -81,16 +80,15 @@ class VerificationComponentInterface:
         return cls(vci_facade, vc_constructor)
 
     @classmethod
-    def validate(cls, vci_source_file_name, vc_handle_t):
+    def validate(cls, vci_path, vc_handle_t):
         """Validates the existence and contents of the verification component interface."""
+        vci_path = Path(vci_path)
 
-        with open(vci_source_file_name) as fptr:
+        with vci_path.open() as fptr:
             code = remove_comments(fptr.read())
             vci_code = VHDLDesignFile.parse(code)
             if len(vci_code.packages) != 1:
-                LOGGER.error(
-                    "%s must contain a single VCI package", vci_source_file_name
-                )
+                LOGGER.error("%s must contain a single VCI package", vci_path)
                 return None, None
 
             vc_constructor = cls._validate_constructor(code, vc_handle_t)
@@ -246,6 +244,7 @@ class VerificationComponentInterface:
 
         :returns: The template code as a string and the name of the verification component entity.
         """
+        vci_path = Path(vci_path)
         vci_code, vc_constructor = cls.validate(vci_path, vc_handle_t)
 
         context_items = create_context_items(
@@ -286,30 +285,7 @@ class VerificationComponentInterface:
         else:
             constant_declarations = "\n"
 
-        tb_template = Template(
-            """-- Read the TODOs to complete this template.
-
-${context_items}
-entity tb_${vc_handle_t}_compliance is
-  generic(
-    runner_cfg : string);
-end entity;
-
-architecture tb of tb_${vc_handle_t}_compliance is
-begin
-  test_runner : process
-    -- TODO: Specify a value for all listed constants.
-${constant_declarations}
-    -- DO NOT modify this line and the lines below.
-  begin
-    test_runner_setup(runner, runner_cfg);
-    test_runner_cleanup(runner);
-  end process test_runner;
-end architecture;
-"""
-        )
-
-        template_code = tb_template.substitute(
+        template_code = TB_TEMPLATE_TEMPLATE.substitute(
             context_items=context_items,
             vc_handle_t=vc_handle_t,
             constant_declarations=constant_declarations,
@@ -328,6 +304,8 @@ end architecture;
 
         :returns: The testbench code as a string.
         """
+        template_path = Path(template_path) if template_path is not None else None
+
         if not template_path:
             template_code, _ = self.create_vhdl_testbench_template(
                 self.vci_facade.library,
@@ -335,7 +313,7 @@ end architecture;
                 self.vc_constructor.return_type_mark,
             )
         else:
-            with open(template_path) as fptr:
+            with template_path.open() as fptr:
                 template_code = fptr.read()
 
         test_runner_body_pattern = re.compile(
@@ -390,110 +368,9 @@ end architecture;
 
             return handle_assignment
 
-        tb_code = Template(
-            template_code[: match.start()]
-            + """
-    constant actor1 : actor_t := new_actor("actor1");
-    constant logger1 : logger_t := get_logger("logger1");
-    constant checker_logger1 : logger_t := get_logger("checker1");
-    constant checker1 : checker_t := new_checker(checker_logger1);
-
-    constant actor2 : actor_t := new_actor("actor2");
-    constant logger2 : logger_t := get_logger("logger2");
-    constant checker_logger2 : logger_t := get_logger("checker2");
-    constant checker2 : checker_t := new_checker(checker_logger2);
-
-    constant actor3 : actor_t := new_actor("actor3");
-    constant logger3 : logger_t := get_logger("logger3");
-    constant checker_logger3 : logger_t := get_logger("checker3");
-    constant checker3 : checker_t := new_checker(checker_logger3);
-
-    variable handle1, handle2, handle3 : ${vc_handle_t};
-    variable std_cfg1, std_cfg2, std_cfg3 : std_cfg_t;
-  begin
-    test_runner_setup(runner, runner_cfg);
-
-    while test_suite loop
-      if run("Test standard configuration") then
-${handle1}
-        std_cfg1 := get_std_cfg(handle1);
-
-        check(get_actor(std_cfg1) = actor1, "Failed to configure actor with ${vc_constructor_name}");
-        check(get_logger(std_cfg1) = logger1, "Failed to configure logger with ${vc_constructor_name}");
-        check(get_checker(std_cfg1) = checker1, "Failed to configure checker with ${vc_constructor_name}");
-        check(unexpected_msg_type_policy(std_cfg1) = fail,
-        "Failed to configure unexpected_msg_type_policy = fail with ${vc_constructor_name}");
-
-${handle2}
-        std_cfg2 := get_std_cfg(handle2);
-
-        check(unexpected_msg_type_policy(std_cfg2) = ignore,
-        "Failed to configure unexpected_msg_type_policy = ignore with ${vc_constructor_name}");
-
-      elsif run("Test handle independence") then
-${handle1}
-${handle3}
-
-        std_cfg1 := get_std_cfg(handle1);
-        std_cfg2 := get_std_cfg(handle2);
-        check(get_actor(std_cfg1) /= get_actor(std_cfg2),
-        "Actor shared between handles created by ${vc_constructor_name}");
-        check(get_logger(std_cfg1) /= get_logger(std_cfg2),
-        "Logger shared between handles created by ${vc_constructor_name}");
-        check(get_checker(std_cfg1) /= get_checker(std_cfg2),
-        "Checker shared between handles created by ${vc_constructor_name}");
-        check(unexpected_msg_type_policy(std_cfg1) /= unexpected_msg_type_policy(std_cfg2),
-        "unexpected_msg_type_policy shared between handles created by ${vc_constructor_name}");
-
-      elsif run("Test default logger") then
-${handle4}
-        std_cfg1 := get_std_cfg(handle1);
-        check(get_logger(std_cfg1) /= null_logger,
-          "No valid default logger (null_logger) created by ${vc_constructor_name}");
-        check(get_logger(std_cfg1) /= default_logger,
-          "No valid default logger (default_logger) created by ${vc_constructor_name}");
-
-${handle5}
-        std_cfg2 := get_std_cfg(handle2);
-        check(get_logger(std_cfg2) /= null_logger,
-          "No valid default logger (null_logger) created by ${vc_constructor_name}");
-        check(get_logger(std_cfg2) /= default_logger,
-          "No valid default logger (default_logger) created by ${vc_constructor_name}");
-
-      elsif run("Test default checker") then
-${handle6}
-        std_cfg1 := get_std_cfg(handle1);
-        check(get_checker(std_cfg1) /= null_checker,
-          "No valid default checker (null_checker) created by ${vc_constructor_name}");
-        check(get_checker(std_cfg1) /= default_checker,
-          "No valid default checker (default_checker) created by ${vc_constructor_name}");
-
-${handle7}
-        std_cfg2 := get_std_cfg(handle2);
-        check(get_checker(std_cfg2) /= null_checker,
-          "No valid default checker (null_checker) created by ${vc_constructor_name}");
-        check(get_checker(std_cfg2) /= default_checker,
-          "No valid default checker (default_checker) created by ${vc_constructor_name}");
-
-${handle8}
-        std_cfg3 := get_std_cfg(handle3);
-        check(get_checker(std_cfg3) /= null_checker,
-          "No valid default checker (null_checker) created by ${vc_constructor_name}");
-        check(get_checker(std_cfg3) /= default_checker,
-          "No valid default checker (default_checker) created by ${vc_constructor_name}");
-        check(get_logger(get_checker(std_cfg3)) = logger3,
-          "Default checker not based on logger provided to ${vc_constructor_name}");
-
-      end if;
-    end loop;
-
-    test_runner_cleanup(runner);
-  end process test_runner;
-end architecture;
-"""
-        )
-
-        testbench_code = tb_code.substitute(
+        testbench_code = template_code[
+            : match.start()
+        ] + TB_EPILOGUE_TEMPLATE.substitute(
             vc_handle_t=self.vc_constructor.return_type_mark,
             vc_constructor_name=self.vc_constructor.identifier,
             handle1=create_handle_assignment(
@@ -567,6 +444,8 @@ end architecture;
            prj.add_vhdl_testbench("test_lib", join(root, "test"), join(root, ".vc", "vc_template.vhd")
 
         """
+        test_dir = Path(test_dir)
+        template_path = Path(template_path) if template_path is not None else None
 
         try:
             vci_test_lib.test_bench(
@@ -580,15 +459,14 @@ end architecture;
         except KeyError:
             pass
 
-        if not exists(test_dir):
-            makedirs(test_dir)
+        if not test_dir.exists():
+            test_dir.mkdir(parents=True)
 
-        tb_path = join(
-            test_dir,
+        tb_path = test_dir / (
             "tb_%s_%s_compliance.vhd"
-            % (self.vci_facade.name, self.vc_constructor.return_type_mark),
+            % (self.vci_facade.name, self.vc_constructor.return_type_mark)
         )
-        with open(tb_path, "w") as fptr:
+        with tb_path.open("w") as fptr:
             testbench_code = self.create_vhdl_testbench(template_path)
             if not testbench_code:
                 return None

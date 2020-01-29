@@ -7,3 +7,6 @@
 """
 Code related to VUnit verification components.
 """
+
+from vunit.vc.verification_component import VerificationComponent
+from vunit.vc.verification_component_interface import VerificationComponentInterface

@@ -8,10 +8,14 @@
 
 import sys
 import re
-from os import makedirs
-from os.path import exists, join
+from pathlib import Path
 from re import subn, MULTILINE, IGNORECASE, DOTALL
-from string import Template
+from vunit.vc.vc_template import (
+    TB_TEMPLATE_TEMPLATE,
+    ARCHITECTURE_DECLARATIONS_TEMPLATE,
+    TEST_RUNNER_TEMPLATE,
+    GENERICS_TEMPLATE,
+)
 from vunit.vhdl_parser import (
     VHDLDesignFile,
     find_closing_delimiter,
@@ -73,14 +77,14 @@ class VerificationComponent:
         self.vci = vci
 
     @staticmethod
-    def validate(vc_source_file_name):
+    def validate(vc_path):
         """Validates the existence and contents of the verification component."""
-
-        with open(vc_source_file_name) as fptr:
+        vc_path = Path(vc_path)
+        with vc_path.open() as fptr:
             vc_code = VHDLDesignFile.parse(fptr.read())
 
             if len(vc_code.entities) != 1:
-                LOGGER.error("%s must contain a single VC entity", vc_source_file_name)
+                LOGGER.error("%s must contain a single VC entity", vc_path)
                 return None
 
             vc_entity = vc_code.entities[0]
@@ -105,6 +109,8 @@ class VerificationComponent:
 
         :returns: The template string and the name of the verification component entity.
         """
+        vc_path = Path(vc_path)
+        vci_path = Path(vci_path)
 
         def create_constructor(vc_entity, vc_handle_t, vc_constructor):
             unspecified_parameters = []
@@ -211,34 +217,8 @@ class VerificationComponent:
             initial_package_refs=initial_package_refs,
         )
 
-        tb_template = Template(
-            """-- Read the TODOs to complete this template.
-
-${context_items}
-entity tb_${vc_name}_compliance is
-  generic(
-    runner_cfg : string);
-end entity;
-
-architecture tb of tb_${vc_name}_compliance is
-
-${constructor}
-${signal_declarations}
-begin
-  -- DO NOT modify the test runner process.
-  test_runner : process
-  begin
-    test_runner_setup(runner, runner_cfg);
-    test_runner_cleanup(runner);
-  end process test_runner;
-
-${vc_instantiation}
-end architecture;
-"""
-        )
-
         return (
-            tb_template.substitute(
+            TB_TEMPLATE_TEMPLATE.substitute(
                 context_items=context_items,
                 vc_name=vc_entity.identifier,
                 constructor=create_constructor(vc_entity, vc_handle_t, vc_constructor),
@@ -256,6 +236,7 @@ end architecture;
 
         :returns: The testbench code as a string.
         """
+        template_path = Path(template_path) if template_path is not None else None
 
         def update_architecture_declarations(code):
             _constructor_call_start_re = re.compile(
@@ -331,40 +312,7 @@ end architecture;
                 for identifier in parameter.identifier_list:
                     default_values[identifier] = parameter.init_value
 
-            architecture_declarations = """\
-constant custom_actor : actor_t := new_actor("vc", inbox_size => 1);
-  constant custom_logger : logger_t := get_logger("vc");
-  constant custom_checker : checker_t := new_checker(get_logger("vc_check"));
-
-  impure function create_handle return {vc_handle_t} is
-    variable handle : {vc_handle_t};
-    variable logger : logger_t := {default_logger};
-    variable actor : actor_t := {default_actor};
-    variable checker : checker_t := {default_checker};
-  begin
-    if use_custom_logger then
-      logger := custom_logger;
-    end if;
-
-    if use_custom_actor then
-      actor := custom_actor;
-    end if;
-
-    if use_custom_checker then
-      checker := custom_checker;
-    end if;
-
-    return {vc_constructor_name}(
-      {specified_parameters}
-      logger => logger,
-      actor => actor,
-      checker => checker,
-      unexpected_msg_type_policy => unexpected_msg_type_policy);
-  end;
-
-  constant {vc_handle_name} : {vc_handle_t} := create_handle;
-  constant unexpected_msg : msg_type_t := new_msg_type("unexpected msg");
-""".format(
+            architecture_declarations = ARCHITECTURE_DECLARATIONS_TEMPLATE.substitute(
                 vc_handle_t=self.vc_handle_t,
                 vc_constructor_name=self.vci.vc_constructor.identifier,
                 specified_parameters=specified_parameters,
@@ -393,58 +341,7 @@ constant custom_actor : actor_t := new_actor("vc", inbox_size => 1);
                 MULTILINE | IGNORECASE | DOTALL,
             )
 
-            new_test_runner = """\
-test_runner : process
-  variable t_start : time;
-  variable msg : msg_t;
-  variable error_logger : logger_t;
-begin
-  test_runner_setup(runner, runner_cfg);
-
-  while test_suite loop
-
-    if run("Test that sync interface is supported") then
-      t_start := now;
-      wait_for_time(net, as_sync({vc_handle_name}), 1 ns);
-      wait_for_time(net, as_sync({vc_handle_name}), 2 ns);
-      wait_for_time(net, as_sync({vc_handle_name}), 3 ns);
-      check_equal(now - t_start, 0 ns);
-      t_start := now;
-      wait_until_idle(net, as_sync({vc_handle_name}));
-      check_equal(now - t_start, 6 ns);
-
-    elsif run("Test that the actor can be customised") then
-      t_start := now;
-      wait_for_time(net, as_sync({vc_handle_name}), 1 ns);
-      wait_for_time(net, as_sync({vc_handle_name}), 2 ns);
-      check_equal(now - t_start, 0 ns);
-      wait_for_time(net, as_sync({vc_handle_name}), 3 ns);
-      check_equal(now - t_start, 1 ns);
-      wait_until_idle(net, as_sync({vc_handle_name}));
-      check_equal(now - t_start, 6 ns);
-
-    elsif run("Test unexpected message handling") then
-      if use_custom_checker then
-        error_logger := get_logger(custom_checker);
-      else
-        error_logger := custom_logger;
-      end if;
-      mock(error_logger, failure);
-      msg := new_msg(unexpected_msg);
-      send(net, custom_actor, msg);
-      wait for 1 ns;
-      if unexpected_msg_type_policy = fail then
-        check_only_log(error_logger, "Got unexpected message unexpected msg", failure);
-      else
-        check_no_log;
-      end if;
-      unmock(error_logger);
-    end if;
-
-  end loop;
-
-  test_runner_cleanup(runner);
-end process test_runner;""".format(
+            new_test_runner = TEST_RUNNER_TEMPLATE.substitute(
                 vc_handle_name=self.vc_entity.generics[0].identifier_list[0]
             )
 
@@ -463,13 +360,9 @@ end process test_runner;""".format(
                 r"\brunner_cfg\s*:\s*string", MULTILINE | IGNORECASE | DOTALL
             )
 
-            new_generics = """use_custom_logger : boolean := false;
-    use_custom_checker : boolean := false;
-    use_custom_actor : boolean := false;
-    unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail;
-    runner_cfg : string"""
-
-            code, num_found_runner_cfg = subn(_runner_cfg_re, new_generics, code, 1)
+            code, num_found_runner_cfg = subn(
+                _runner_cfg_re, GENERICS_TEMPLATE, code, 1
+            )
             if not num_found_runner_cfg:
                 raise RuntimeError(
                     "Failed to find runner_cfg generic in template_path %s"
@@ -479,7 +372,7 @@ end process test_runner;""".format(
             return code
 
         if template_path:
-            with open(template_path) as fptr:
+            with template_path.open() as fptr:
                 template_code = fptr.read().lower()
         else:
             template_code, _ = self.create_vhdl_testbench_template(
@@ -525,6 +418,8 @@ end process test_runner;""".format(
            prj.add_vhdl_testbench("test_lib", join(root, "test"), join(root, ".vc", "vc_template.vhd")
 
         """
+        test_dir = Path(test_dir)
+        template_path = Path(template_path) if template_path is not None else None
 
         try:
             vc_test_lib.test_bench("tb_%s_compliance" % self.vc_entity.identifier)
@@ -535,17 +430,17 @@ end process test_runner;""".format(
         except KeyError:
             pass
 
-        if not exists(test_dir):
-            makedirs(test_dir)
+        if not test_dir.exists():
+            test_dir.mkdir(parents=True)
 
-        tb_path = join(test_dir, "tb_%s_compliance.vhd" % self.vc_entity.identifier)
-        with open(tb_path, "w") as fptr:
+        tb_path = test_dir / ("tb_%s_compliance.vhd" % self.vc_entity.identifier)
+        with tb_path.open("w") as fptr:
             testbench_code = self.create_vhdl_testbench(template_path)
             if not testbench_code:
                 return None
             fptr.write(testbench_code)
 
-        tb_file = vc_test_lib.add_source_file(tb_path)
+        tb_file = vc_test_lib.add_source_file(str(tb_path))
         testbench = vc_test_lib.test_bench(
             "tb_%s_compliance" % self.vc_entity.identifier
         )

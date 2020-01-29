@@ -9,8 +9,7 @@ Test the compliance test.
 """
 from unittest import TestCase, mock
 from shutil import rmtree
-from os.path import exists, dirname, join, abspath
-from os import makedirs
+from pathlib import Path
 from itertools import product
 import re
 from vunit.ostools import renew_path
@@ -28,8 +27,8 @@ class TestComplianceTest(TestCase):  # pylint: disable=too-many-public-methods
     """Tests the ComplianceTest class."""
 
     def setUp(self):
-        self.tmp_dir = join(dirname(__file__), "vc_tmp")
-        renew_path(self.tmp_dir)
+        self.tmp_dir = Path(__file__).parent / "vc_tmp"
+        renew_path(str(self.tmp_dir))
         self.vc_contents = """
 library ieee
 use ieee.std_logic_1164.all;
@@ -46,7 +45,7 @@ entity vc is
 
 end entity;
 """
-        self.vc_path = self.make_file(join(self.tmp_dir, "vc.vhd"), self.vc_contents)
+        self.vc_path = self.make_file("vc.vhd", self.vc_contents)
 
         self.vci_contents = """
 package vc_pkg is
@@ -62,15 +61,15 @@ package vc_pkg is
   ) return vc_handle_t;
 end package;
 """
-        self.vci_path = self.make_file(join(self.tmp_dir, "vci.vhd"), self.vci_contents)
+        self.vci_path = self.make_file("vci.vhd", self.vci_contents)
 
         self.ui = VUnit.from_argv([])
 
         self.vc_lib = self.ui.add_library("vc_lib")
-        self.vc_lib.add_source_files(join(self.tmp_dir, "*.vhd"))
+        self.vc_lib.add_source_files(str(self.tmp_dir / "*.vhd"))
 
     def tearDown(self):
-        if exists(self.tmp_dir):
+        if self.tmp_dir.exists():
             rmtree(self.tmp_dir)
 
     def make_file(self, file_name, contents):
@@ -78,10 +77,10 @@ end package;
         Create a file in the temporary directory with contents
         Returns the absolute path to the file.
         """
-        full_file_name = abspath(join(self.tmp_dir, file_name))
-        with open(full_file_name, "w") as outfile:
+        full_file_name = (self.tmp_dir / file_name).resolve()
+        with full_file_name.open("w") as outfile:
             outfile.write(contents)
-        return full_file_name
+        return str(full_file_name)
 
     @mock.patch("vunit.vc.verification_component_interface.LOGGER.error")
     def test_not_finding_vc(self, error_mock):
@@ -113,15 +112,13 @@ entity vc2 is
   generic(b : bit);
 end entity;
 """
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "vc1_2.vhd"), vc_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("vc1_2.vhd", vc_contents))
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         self.assertRaises(
             SystemExit, VerificationComponent.find, self.vc_lib, "vc1", vci
         )
         error_mock.assert_called_once_with(
-            "%s must contain a single VC entity", join(self.tmp_dir, "vc1_2.vhd")
+            "%s must contain a single VC entity", self.tmp_dir / "vc1_2.vhd"
         )
 
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
@@ -129,7 +126,7 @@ end entity;
             SystemExit, VerificationComponent.find, self.vc_lib, "vc2", vci
         )
         error_mock.assert_called_with(
-            "%s must contain a single VC entity", join(self.tmp_dir, "vc1_2.vhd")
+            "%s must contain a single VC entity", self.tmp_dir / "vc1_2.vhd"
         )
 
     @mock.patch("vunit.vc.verification_component_interface.LOGGER.error")
@@ -141,9 +138,7 @@ end package;
 package vc_pkg2 is
 end package;
 """
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "vci1_2.vhd"), vci_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("vci1_2.vhd", vci_contents))
         self.assertRaises(
             SystemExit,
             VerificationComponentInterface.find,
@@ -152,7 +147,7 @@ end package;
             "vc_handle_t",
         )
         error_mock.assert_called_once_with(
-            "%s must contain a single VCI package", join(self.tmp_dir, "vci1_2.vhd")
+            "%s must contain a single VCI package", self.tmp_dir / "vci1_2.vhd"
         )
         self.assertRaises(
             SystemExit,
@@ -162,7 +157,7 @@ end package;
             "vc_handle_t",
         )
         error_mock.assert_called_with(
-            "%s must contain a single VCI package", join(self.tmp_dir, "vci1_2.vhd")
+            "%s must contain a single VCI package", self.tmp_dir / "vci1_2.vhd"
         )
 
     @mock.patch("vunit.vc.verification_component_interface.LOGGER.error")
@@ -171,9 +166,7 @@ end package;
 entity vc1 is
 end entity;
 """
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "vc1.vhd"), vc1_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("vc1.vhd", vc1_contents))
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         self.assertRaises(
             SystemExit, VerificationComponent.find, self.vc_lib, "vc1", vci
@@ -185,9 +178,7 @@ entity vc2 is
   generic(a : bit; b : bit);
 end entity;
 """
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "vc2.vhd"), vc2_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("vc2.vhd", vc2_contents))
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         self.assertRaises(
             SystemExit, VerificationComponent.find, self.vc_lib, "vc2", vci
@@ -199,9 +190,7 @@ entity vc3 is
   generic(a, b : bit);
 end entity;
 """
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "vc3.vhd"), vc3_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("vc3.vhd", vc3_contents))
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         self.assertRaises(
             SystemExit, VerificationComponent.find, self.vc_lib, "vc3", vci
@@ -219,9 +208,7 @@ package other_vc_pkg is
   impure function create_vc return vc_handle_t;
 end package;
 """
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "other_vci.vhd"), vci_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("other_vci.vhd", vci_contents))
 
         self.assertRaises(
             SystemExit,
@@ -245,9 +232,7 @@ package other_vc_pkg is
   impure function new_vc return vc_t;
 end package;
 """
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "other_vci.vhd"), vci_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("other_vci.vhd", vci_contents))
 
         self.assertRaises(
             SystemExit,
@@ -319,9 +304,7 @@ end package;
 """
             )
             self.vc_lib.add_source_file(
-                self.make_file(
-                    join(self.tmp_dir, "other_vci_%d.vhd" % iteration), vci_contents
-                )
+                self.make_file("other_vci_%d.vhd" % iteration, vci_contents)
             )
 
             if invalid_reason == "missing_parameter":
@@ -368,9 +351,7 @@ package other_vc_pkg is
 end package;
 """
 
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "other_vci.vhd"), vci_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("other_vci.vhd", vci_contents))
 
         self.assertRaises(
             SystemExit,
@@ -400,9 +381,7 @@ package other_vc_pkg is
 end package;
 """
 
-        self.vc_lib.add_source_file(
-            self.make_file(join(self.tmp_dir, "other_vci.vhd"), vci_contents)
-        )
+        self.vc_lib.add_source_file(self.make_file("other_vci.vhd", vci_contents))
 
         self.assertRaises(
             SystemExit,
@@ -456,9 +435,7 @@ end package;
 """
             )
             self.vc_lib.add_source_file(
-                self.make_file(
-                    join(self.tmp_dir, "other_vci_%d.vhd" % iteration), vci_contents
-                )
+                self.make_file("other_vci_%d.vhd" % iteration, vci_contents)
             )
 
             with mock.patch.object(LOGGER, "error") as error_mock:
@@ -492,7 +469,7 @@ entity vc2 is
 end entity;
 """
 
-        vc_path = self.make_file(join(self.tmp_dir, "vc2.vhd"), vc_contents)
+        vc_path = self.make_file("vc2.vhd", vc_contents)
         template, _ = VerificationComponent.create_vhdl_testbench_template(
             "vc_lib", vc_path, self.vci_path
         )
@@ -530,9 +507,7 @@ begin
 end architecture;
 """
 
-        template_path = self.make_file(
-            join(self.tmp_dir, "template.vhd"), template_contents
-        )
+        template_path = self.make_file("template.vhd", template_contents)
 
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         vc = VerificationComponent.find(self.vc_lib, "vc", vci)
@@ -554,9 +529,7 @@ begin
 end architecture;
 """
 
-        template_path = self.make_file(
-            join(self.tmp_dir, "template.vhd"), template_contents
-        )
+        template_path = self.make_file("template.vhd", template_contents)
 
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         vc = VerificationComponent.find(self.vc_lib, "vc", vci)
@@ -579,9 +552,7 @@ begin
 end architecture;
 """
 
-        template_path = self.make_file(
-            join(self.tmp_dir, "template.vhd"), template_contents
-        )
+        template_path = self.make_file("template.vhd", template_contents)
 
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         vc = VerificationComponent.find(self.vc_lib, "vc", vci)
@@ -604,9 +575,7 @@ begin
 end architecture;
 """
 
-        template_path = self.make_file(
-            join(self.tmp_dir, "template.vhd"), template_contents
-        )
+        template_path = self.make_file("template.vhd", template_contents)
 
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         vc = VerificationComponent.find(self.vc_lib, "vc", vci)
@@ -619,56 +588,56 @@ end architecture;
             main()
 
             self.assertTrue(
-                exists(
-                    join(dirname(self.vc_path), ".vc", "tb_vc_compliance_template.vhd")
-                )
+                (
+                    Path(self.vc_path).parent / ".vc" / "tb_vc_compliance_template.vhd"
+                ).exists()
             )
 
     def test_creating_template_with_output_dir(self):
-        output_dir = join(self.tmp_dir, "template")
-        makedirs(output_dir)
+        output_dir = self.tmp_dir / "template"
+        output_dir.mkdir(parents=True)
         with mock.patch(
             "sys.argv",
             [
                 "compliance_test.py",
                 "create-vc",
                 "-o",
-                output_dir,
+                str(output_dir),
                 self.vc_path,
                 self.vci_path,
             ],
         ):
             main()
-            self.assertTrue(exists(join(output_dir, "tb_vc_compliance_template.vhd")))
+            self.assertTrue((output_dir / "tb_vc_compliance_template.vhd").exists())
 
     def test_creating_template_with_output_file(self):
-        output_dir = join(self.tmp_dir, "template")
-        makedirs(output_dir)
-        output_path = join(output_dir, "template.vhd")
+        output_dir = self.tmp_dir / "template"
+        output_dir.mkdir(parents=True)
+        output_path = output_dir / "template.vhd"
         with mock.patch(
             "sys.argv",
             [
                 "compliance_test.py",
                 "create-vc",
                 "--output-path",
-                output_path,
+                str(output_path),
                 self.vc_path,
                 self.vci_path,
             ],
         ):
             main()
-            self.assertTrue(exists(output_path))
+            self.assertTrue(output_path.exists())
 
     def test_creating_template_with_invalid_output_path(self):
-        output_dir = join(self.tmp_dir, "test")
-        output_path = join(output_dir, "template.vhd")
+        output_dir = self.tmp_dir / "test"
+        output_path = output_dir / "template.vhd"
         with mock.patch(
             "sys.argv",
             [
                 "compliance_test.py",
                 "create-vc",
                 "--output-path",
-                output_path,
+                str(output_path),
                 self.vc_path,
                 self.vci_path,
             ],
@@ -680,9 +649,9 @@ end architecture;
             "sys.argv", ["compliance_test.py", "create-vc", self.vc_path, self.vci_path]
         ):
             main()
-            with open(
-                join(dirname(self.vc_path), ".vc", "tb_vc_compliance_template.vhd")
-            ) as fptr:
+            with (
+                Path(self.vc_path).parent / ".vc" / "tb_vc_compliance_template.vhd"
+            ).open() as fptr:
                 self.assertIsNotNone(
                     re.search(
                         r"library\s+vc_lib\s*;",
@@ -704,9 +673,9 @@ end architecture;
             ],
         ):
             main()
-            with open(
-                join(dirname(self.vc_path), ".vc", "tb_vc_compliance_template.vhd")
-            ) as fptr:
+            with (
+                Path(self.vc_path).parent / ".vc" / "tb_vc_compliance_template.vhd"
+            ).open() as fptr:
                 self.assertIsNotNone(
                     re.search(
                         r"library\s+my_vc_lib\s*;",
@@ -721,14 +690,14 @@ end architecture;
         vci = VerificationComponentInterface.find(self.vc_lib, "vc_pkg", "vc_handle_t")
         vc = VerificationComponent.find(self.vc_lib, "vc", vci)
 
-        vc.add_vhdl_testbench(vc_test_lib, join(self.tmp_dir, "compliance_test"))
+        vc.add_vhdl_testbench(vc_test_lib, str(self.tmp_dir / "compliance_test"))
 
         self.assertTrue(
-            exists(join(self.tmp_dir, "compliance_test", "tb_vc_compliance.vhd"))
+            (self.tmp_dir / "compliance_test" / "tb_vc_compliance.vhd").exists()
         )
         self.assertRaises(
             RuntimeError,
             vc.add_vhdl_testbench,
             vc_test_lib,
-            join(self.tmp_dir, "compliance_test"),
+            str(self.tmp_dir / "compliance_test"),
         )

@@ -4,7 +4,7 @@
 #
 # Copyright (c) 2014-2020, Lars Asplund lars.anders.asplund@gmail.com
 
-from os.path import join, dirname
+from pathlib import Path
 from vunit import (
     VUnit,
     VerificationComponentInterface,
@@ -12,13 +12,13 @@ from vunit import (
 )
 from itertools import product
 
-root = dirname(__file__)
+root = Path(__file__).parent
 
 ui = VUnit.from_argv()
 ui.add_random()
 ui.add_verification_components()
 lib = ui.library("vunit_lib")
-lib.add_source_files(join(root, "test", "*.vhd"))
+lib.add_source_files(str(root / "test" / "*.vhd"))
 
 
 def encode(tb_cfg):
@@ -143,31 +143,31 @@ bus_master_vci = VerificationComponentInterface.find(
 )
 bus_master_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "bus_master_pkg", "tb_bus_master_t_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "bus_master_pkg" / "tb_bus_master_t_compliance_template.vhd",
 )
 VerificationComponent.find(lib, "axi_lite_master", bus_master_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_axi_lite_master_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_axi_lite_master_compliance_template.vhd",
 )
 
 axi_slave_vci = VerificationComponentInterface.find(lib, "axi_slave_pkg", "axi_slave_t")
 axi_slave_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "axi_slave_pkg", "tb_axi_slave_t_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "axi_slave_pkg" / "tb_axi_slave_t_compliance_template.vhd",
 )
 VerificationComponent.find(lib, "axi_read_slave", axi_slave_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_axi_read_slave_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_axi_read_slave_compliance_template.vhd",
 )
 
 VerificationComponent.find(lib, "axi_write_slave", axi_slave_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_axi_write_slave_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_axi_write_slave_compliance_template.vhd",
 )
 
 axi_stream_master_vci = VerificationComponentInterface.find(
@@ -175,17 +175,15 @@ axi_stream_master_vci = VerificationComponentInterface.find(
 )
 axi_stream_master_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(
-        root, ".vc", "axi_stream_pkg", "tb_axi_stream_master_t_compliance_template.vhd"
-    ),
+    root / "compliance_test",
+    root / ".vc" / "axi_stream_pkg" / "tb_axi_stream_master_t_compliance_template.vhd",
 )
 VerificationComponent.find(
     lib, "axi_stream_master", axi_stream_master_vci
 ).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_axi_stream_master_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_axi_stream_master_compliance_template.vhd",
 )
 
 axi_stream_slave_vci = VerificationComponentInterface.find(
@@ -193,17 +191,15 @@ axi_stream_slave_vci = VerificationComponentInterface.find(
 )
 axi_stream_slave_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(
-        root, ".vc", "axi_stream_pkg", "tb_axi_stream_slave_t_compliance_template.vhd"
-    ),
+    root / "compliance_test",
+    root / ".vc" / "axi_stream_pkg" / "tb_axi_stream_slave_t_compliance_template.vhd",
 )
 VerificationComponent.find(
     lib, "axi_stream_slave", axi_stream_slave_vci
 ).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_axi_stream_slave_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_axi_stream_slave_compliance_template.vhd",
 )
 
 axi_stream_monitor_vci = VerificationComponentInterface.find(
@@ -211,17 +207,15 @@ axi_stream_monitor_vci = VerificationComponentInterface.find(
 )
 axi_stream_monitor_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(
-        root, ".vc", "axi_stream_pkg", "tb_axi_stream_monitor_t_compliance_template.vhd"
-    ),
+    root / "compliance_test",
+    root / ".vc" / "axi_stream_pkg" / "tb_axi_stream_monitor_t_compliance_template.vhd",
 )
 VerificationComponent.find(
     lib, "axi_stream_monitor", axi_stream_monitor_vci
 ).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_axi_stream_monitor_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_axi_stream_monitor_compliance_template.vhd",
 )
 
 axi_stream_protocol_checker_vci = VerificationComponentInterface.find(
@@ -229,36 +223,34 @@ axi_stream_protocol_checker_vci = VerificationComponentInterface.find(
 )
 axi_stream_protocol_checker_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(
-        root,
-        ".vc",
-        "axi_stream_pkg",
-        "tb_axi_stream_protocol_checker_t_compliance_template.vhd",
-    ),
+    root / "compliance_test",
+    root
+    / ".vc"
+    / "axi_stream_pkg"
+    / "tb_axi_stream_protocol_checker_t_compliance_template.vhd",
 )
 VerificationComponent.find(
     lib, "axi_stream_protocol_checker", axi_stream_protocol_checker_vci
 ).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_axi_stream_protocol_checker_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_axi_stream_protocol_checker_compliance_template.vhd",
 )
 
 uart_master_vci = VerificationComponentInterface.find(lib, "uart_pkg", "uart_master_t")
 uart_master_vci.add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 VerificationComponent.find(lib, "uart_master", uart_master_vci).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 
 uart_slave_vci = VerificationComponentInterface.find(lib, "uart_pkg", "uart_slave_t")
 uart_slave_vci.add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 VerificationComponent.find(lib, "uart_slave", uart_slave_vci).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 
 wishbone_master_vci = VerificationComponentInterface.find(
@@ -266,15 +258,15 @@ wishbone_master_vci = VerificationComponentInterface.find(
 )
 wishbone_master_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "wishbone_pkg", "tb_wishbone_master_t_compliance_template.vhd",),
+    root / "compliance_test",
+    root / ".vc" / "wishbone_pkg" / "tb_wishbone_master_t_compliance_template.vhd",
 )
 VerificationComponent.find(
     lib, "wishbone_master", wishbone_master_vci
 ).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_wishbone_master_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_wishbone_master_compliance_template.vhd",
 )
 
 wishbone_slave_vci = VerificationComponentInterface.find(
@@ -282,29 +274,29 @@ wishbone_slave_vci = VerificationComponentInterface.find(
 )
 wishbone_slave_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "wishbone_pkg", "tb_wishbone_slave_t_compliance_template.vhd",),
+    root / "compliance_test",
+    root / ".vc" / "wishbone_pkg" / "tb_wishbone_slave_t_compliance_template.vhd",
 )
 VerificationComponent.find(
     lib, "wishbone_slave", wishbone_slave_vci
 ).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_wishbone_slave_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_wishbone_slave_compliance_template.vhd",
 )
 
 std_logic_checker_vci = VerificationComponentInterface.find(
     lib, "signal_checker_pkg", "signal_checker_t"
 )
 std_logic_checker_vci.add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 VerificationComponent.find(
     lib, "std_logic_checker", std_logic_checker_vci
 ).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_std_logic_checker_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_std_logic_checker_compliance_template.vhd",
 )
 
 ram_master_vci = VerificationComponentInterface.find(
@@ -312,25 +304,25 @@ ram_master_vci = VerificationComponentInterface.find(
 )
 ram_master_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "ram_master_pkg", "tb_ram_master_t_compliance_template.vhd",),
+    root / "compliance_test",
+    root / ".vc" / "ram_master_pkg" / "tb_ram_master_t_compliance_template.vhd",
 )
 VerificationComponent.find(lib, "ram_master", ram_master_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_ram_master_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_ram_master_compliance_template.vhd",
 )
 
 VerificationComponentInterface.find(
     lib, "stream_master_pkg", "stream_master_t"
 ).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 
 VerificationComponentInterface.find(
     lib, "stream_slave_pkg", "stream_slave_t"
 ).add_vhdl_testbench(
-    test_lib, join(root, "compliance_test"),
+    test_lib, root / "compliance_test",
 )
 
 bus2memory_vci = VerificationComponentInterface.find(
@@ -338,13 +330,13 @@ bus2memory_vci = VerificationComponentInterface.find(
 )
 bus2memory_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "bus2memory_pkg", "tb_bus2memory_t_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "bus2memory_pkg" / "tb_bus2memory_t_compliance_template.vhd",
 )
 VerificationComponent.find(lib, "bus2memory", bus2memory_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_bus2memory_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_bus2memory_compliance_template.vhd",
 )
 
 avalon_master_vci = VerificationComponentInterface.find(
@@ -352,13 +344,13 @@ avalon_master_vci = VerificationComponentInterface.find(
 )
 avalon_master_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "avalon_pkg", "tb_avalon_master_t_compliance_template.vhd",),
+    root / "compliance_test",
+    root / ".vc" / "avalon_pkg" / "tb_avalon_master_t_compliance_template.vhd",
 )
 VerificationComponent.find(lib, "avalon_master", avalon_master_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_avalon_master_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_avalon_master_compliance_template.vhd",
 )
 
 avalon_slave_vci = VerificationComponentInterface.find(
@@ -366,13 +358,13 @@ avalon_slave_vci = VerificationComponentInterface.find(
 )
 avalon_slave_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "avalon_pkg", "tb_avalon_slave_t_compliance_template.vhd",),
+    root / "compliance_test",
+    root / ".vc" / "avalon_pkg" / "tb_avalon_slave_t_compliance_template.vhd",
 )
 VerificationComponent.find(lib, "avalon_slave", avalon_slave_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_avalon_slave_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_avalon_slave_compliance_template.vhd",
 )
 
 avalon_source_vci = VerificationComponentInterface.find(
@@ -380,15 +372,13 @@ avalon_source_vci = VerificationComponentInterface.find(
 )
 avalon_source_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(
-        root, ".vc", "avalon_stream_pkg", "tb_avalon_source_t_compliance_template.vhd",
-    ),
+    root / "compliance_test",
+    root / ".vc" / "avalon_stream_pkg" / "tb_avalon_source_t_compliance_template.vhd",
 )
 VerificationComponent.find(lib, "avalon_source", avalon_source_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_avalon_source_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_avalon_source_compliance_template.vhd",
 )
 
 avalon_sink_vci = VerificationComponentInterface.find(
@@ -396,16 +386,14 @@ avalon_sink_vci = VerificationComponentInterface.find(
 )
 avalon_sink_vci.add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "avalon_stream_pkg", "tb_avalon_sink_t_compliance_template.vhd",),
+    root / "compliance_test",
+    root / ".vc" / "avalon_stream_pkg" / "tb_avalon_sink_t_compliance_template.vhd",
 )
 VerificationComponent.find(lib, "avalon_sink", avalon_sink_vci).add_vhdl_testbench(
     test_lib,
-    join(root, "compliance_test"),
-    join(root, ".vc", "tb_avalon_sink_compliance_template.vhd"),
+    root / "compliance_test",
+    root / ".vc" / "tb_avalon_sink_compliance_template.vhd",
 )
 
-
 ui.set_compile_option("rivierapro.vcom_flags", ["-dbg"])
-
 ui.main()

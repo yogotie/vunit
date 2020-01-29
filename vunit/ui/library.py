@@ -279,15 +279,24 @@ class Library(object):
 
         return SourceFile(source_file, self._project, self._parent)
 
-    def package(self, name):
+    def _get_design_unit(self, name):
         """
-        Get a package within the library
+        Get design unit from name
         """
         library = self._project.get_library(self._library_name)
         design_unit = library.primary_design_units.get(name)
 
         if design_unit is None:
             raise KeyError(name)
+
+        return design_unit
+
+    def package(self, name):
+        """
+        Get a package within the library
+        """
+        design_unit = self._get_design_unit(name)
+
         if design_unit.unit_type != "package":
             raise KeyError(name)
 
@@ -297,11 +306,8 @@ class Library(object):
         """
         Get an entity within the library
         """
-        library = self._project.get_library(self._library_name)
-        design_unit = library.primary_design_units.get(name)
+        design_unit = self._get_design_unit(name)
 
-        if design_unit is None:
-            raise KeyError(name)
         if design_unit.unit_type != "entity":
             raise KeyError(name)
 

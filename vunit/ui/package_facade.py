@@ -22,7 +22,6 @@ class PackageFacade(object):
         self._library_name = library_name
         self._package_name = package_name
         self._design_unit = design_unit
-        self._source_file = self._design_unit.source_file
 
     def generate_codecs(
         self, codec_package_name=None, used_packages=None, output_file_name=None
@@ -35,7 +34,7 @@ class PackageFacade(object):
 
         if output_file_name is None:
             codecs_path = join(self._parent.codecs_path, self._library_name)
-            file_extension = splitext(self._source_file.name)[1]
+            file_extension = splitext(self.source_file.name)[1]
             output_file_name = join(codecs_path, codec_package_name + file_extension)
 
         codec_generator.generate_codecs(
@@ -63,4 +62,4 @@ class PackageFacade(object):
         """
         :returns: The source file that contains this package
         """
-        return self._source_file
+        return self._design_unit.source_file
