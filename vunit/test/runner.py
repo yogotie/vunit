@@ -9,7 +9,6 @@ Provided functionality to run a suite of test in a robust way
 """
 
 import os
-from os.path import relpath
 from pathlib import Path
 import traceback
 import threading
@@ -145,13 +144,13 @@ class TestRunner(object):  # pylint: disable=too-many-instance-attributes
             try:
                 test_suite = scheduler.next()
 
-                output_path = create_output_path(self._output_path, test_suite.name)
+                output_path = self._get_output_path(test_suite.name)
                 output_file_name = str(Path(output_path) / "output.txt")
 
                 with self._stdout_lock():
                     for test_name in test_suite.test_names:
                         print("Starting %s" % test_name)
-                    print("Output file: %s" % relpath(output_file_name))
+                    print("Output file: %s" % output_file_name)
 
                 self._run_test_suite(
                     test_suite, write_stdout, num_tests, output_path, output_file_name
@@ -171,6 +170,36 @@ class TestRunner(object):  # pylint: disable=too-many-instance-attributes
             finally:
                 if test_suite is not None:
                     scheduler.test_done()
+
+    def _get_output_path(self, test_suite_name):
+        """
+        Construct the full output path of a test case.
+        Ensure no bad characters and no long path names.
+        """
+        output_path = str(Path(self._output_path).resolve())
+        safe_name = (
+            "".join(char if _is_legal(char) else "_" for char in test_suite_name) + "_"
+        )
+        hash_name = hash_string(test_suite_name)
+
+        if "VUNIT_SHORT_TEST_OUTPUT_PATHS" in os.environ:
+            full_name = hash_name
+        elif sys.platform == "win32":
+            max_path = 260
+            margin = int(os.environ.get("VUNIT_TEST_OUTPUT_PATH_MARGIN", "100"))
+            prefix_len = len(output_path)
+            full_name = (
+                safe_name[
+                    : min(
+                        max_path - margin - prefix_len - len(hash_name), len(safe_name)
+                    )
+                ]
+                + hash_name
+            )
+        else:
+            full_name = safe_name + hash_name
+
+        return str(Path(output_path) / full_name)
 
     def _add_skipped_tests(
         self, test_suite, results, start_time, num_tests, output_file_name
@@ -197,7 +226,7 @@ class TestRunner(object):  # pylint: disable=too-many-instance-attributes
         results = self._fail_suite(test_suite)
 
         try:
-            ostools.renew_path(output_path)
+            self._prepare_test_suite_output_path(output_path)
             output_file = wrap(open(output_file_name, "a+"), use_color=False)
             output_file.seek(0)
             output_file.truncate()
@@ -220,11 +249,11 @@ class TestRunner(object):  # pylint: disable=too-many-instance-attributes
                 return contents
 
             results = test_suite.run(output_path=output_path, read_output=read_output)
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as exk:
             self._add_skipped_tests(
                 test_suite, results, start_time, num_tests, output_file_name
             )
-            raise KeyboardInterrupt
+            raise KeyboardInterrupt from exk
         except:  # pylint: disable=bare-except
             if self._dont_catch_exceptions:
                 raise
@@ -259,6 +288,13 @@ class TestRunner(object):  # pylint: disable=too-many-instance-attributes
             if self._fail_fast and any_not_passed:
                 self._abort = True
 
+    @staticmethod
+    def _prepare_test_suite_output_path(output_path):
+        """
+        Make sure the directory exists and is empty before running test.
+        """
+        ostools.renew_path(output_path)
+
     def _create_test_mapping_file(self, test_suites):
         """
         Create a file mapping test name to test output folder.
@@ -277,7 +313,7 @@ class TestRunner(object):  # pylint: disable=too-many-instance-attributes
             mapping = set()
 
         for test_suite in test_suites:
-            test_output = create_output_path(self._output_path, test_suite.name)
+            test_output = self._get_output_path(test_suite.name)
             mapping.add("%s %s" % (Path(test_output).name, test_suite.name))
 
         # Sort by everything except hash
@@ -429,35 +465,6 @@ def _is_legal(char):
     Return true if the character is legal to have in a file name
     """
     return (char in LEGAL_CHARS) and (char not in ILLEGAL_CHARS)
-
-
-def create_output_path(output_path, test_suite_name):
-    """
-    Create the full output path of a test case.
-    Ensure no bad characters and no long path names.
-    """
-    output_path = str(Path(output_path).resolve())
-    safe_name = (
-        "".join(char if _is_legal(char) else "_" for char in test_suite_name) + "_"
-    )
-    hash_name = hash_string(test_suite_name)
-
-    if "VUNIT_SHORT_TEST_OUTPUT_PATHS" in os.environ:
-        full_name = hash_name
-    elif sys.platform == "win32":
-        max_path = 260
-        margin = int(os.environ.get("VUNIT_TEST_OUTPUT_PATH_MARGIN", "100"))
-        prefix_len = len(output_path)
-        full_name = (
-            safe_name[
-                : min(max_path - margin - prefix_len - len(hash_name), len(safe_name))
-            ]
-            + hash_name
-        )
-    else:
-        full_name = safe_name + hash_name
-
-    return str(Path(output_path) / full_name)
 
 
 def wrap(file_obj, use_color=True):
