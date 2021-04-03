@@ -7,7 +7,6 @@ on:
     - cron: '0 0 * * 5'
 
 env:
-  DOCKER_REGISTRY: docker.pkg.github.com
   # https://github.com/tox-dev/tox/issues/1468
   PY_COLORS: 1
 
@@ -25,7 +24,7 @@ jobs:
 
     - uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.9
 
     - name: Install dependencies
       run: |
@@ -33,7 +32,7 @@ jobs:
         pip install -U virtualenv tox --progress-bar off
 
     - name: Run 'black'
-      run: tox -e py38-fmt -- --check
+      run: tox -e py39-fmt -- --check
 
 #
 # Linux linting and unit tests
@@ -46,9 +45,9 @@ jobs:
       max-parallel: 2
       matrix:
         task: [
-          38-lint,
+          38-lint, # https://github.com/PyCQA/pylint/issues/3882
           36-unit,
-          38-unit,
+          39-unit,
         ]
     steps:
 
@@ -56,7 +55,7 @@ jobs:
 
     - uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.9
 
     - name: Install dependencies
       run: |
@@ -77,8 +76,8 @@ jobs:
       max-parallel: 2
       matrix:
         task: [
-          {do: 38-acceptance,  tag: llvm},
-          {do: 38-vcomponents, tag: mcode},
+          {do: 39-acceptance,  tag: llvm},
+          {do: 39-vcomponents, tag: mcode},
         ]
     steps:
 
@@ -86,15 +85,8 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Docker login
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u vunit-gha --password-stdin "$DOCKER_REGISTRY"
-
     - name: Run job
-      run: docker run --rm -tv $(pwd):/src -w /src "$DOCKER_REGISTRY"/vunit/vunit/dev:${{ matrix.task.tag }} tox -e py${{ matrix.task.do }}-ghdl
-
-    - name: Docker logout
-      run: docker logout "$DOCKER_REGISTRY"
-      if: always()
+      run: docker run --rm -tv $(pwd):/src -w /src ghcr.io/vunit/dev:${{ matrix.task.tag }} tox -e py${{ matrix.task.do }}-ghdl
 
 #
 # Windows with latest stable GHDL
@@ -107,11 +99,11 @@ jobs:
       max-parallel: 3
       matrix:
         task: [
-          38-acceptance-ghdl,
-          38-vcomponents-ghdl,
-          38-lint,
+          39-acceptance-ghdl,
+          39-vcomponents-ghdl,
+          38-lint, # https://github.com/PyCQA/pylint/issues/3882
           36-unit,
-          38-unit,
+          39-unit,
         ]
     steps:
 
@@ -121,7 +113,7 @@ jobs:
 
     - uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.9
 
     - name: Install dependencies
       run: |
@@ -159,7 +151,7 @@ jobs:
 
     - uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.9
 
     - name: Install dependencies
       run: |
